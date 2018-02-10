@@ -27,56 +27,6 @@ communication based on the [JSON-RPC](http://www.jsonrpc.org/)
 protocol. It allows a request/response-style communication over
 the plain message protocol [MQTT](http://mqtt.org).
 
-Internals
----------
-
-Internally, remote methods are assigned to MQTT topics. When calling a
-remote method named `example/hello` with parameters "world" and 42 via...
-
-```js
-rpc.call("example/hello", "world", 42).then((result) => {
-    ...
-})
-```
-
-..the following JSON-RPC 2.0 request message is sent to the permanent MQTT
-topic `example/hello/request`:
-
-```json
-{
-    "jsonrpc": "2.0",
-    "id":      "d1acc980-0e4e-11e8-98f0-ab5030b47df4:d1db7aa0-0e4e-11e8-b1d9-5f0ab230c0d9",
-    "method":  "example/hello",
-    "params":  [ "world", 42 ]
-}
-```
-
-Beforehand, this `example/hello` method should have been registered with...
-
-```js
-rpc.register("example/hello", (a1, a2) => {
-    return `${a1}:${a2}`
-})
-```
-
-...and then its result, here `"world:42"`, is then
-sent back as the following JSON-RPC 2.0 success response
-message to the temporary (client-specific) MQTT topic
-`example/hello/response/d1acc980-0e4e-11e8-98f0-ab5030b47df4`:
-
-```json
-{
-    "jsonrpc": "2.0",
-    "id":      "d1acc980-0e4e-11e8-98f0-ab5030b47df4:d1db7aa0-0e4e-11e8-b1d9-5f0ab230c0d9",
-    "result":  "world:42"
-}
-```
-
-The JSON-RPC 2.0 `id` field always consists of `<cid>:<rid>`, where
-`<cid>` is the UUID v1 of the MQTT-JSON-RPC instance and `<rid>` is
-the UUID v1 of the particular method request. The `<cid>` is used for
-sending back the JSON-RPC 2.0 response message to the requestor only.
-
 Usage
 -----
 
@@ -151,6 +101,56 @@ wrapper around it with the following additional methods:
   the returned `Promise`. Internally, on the MQTT broker the topic
   `${method}/response/<cid>` is temporarily subscribed for receiving the
   response.
+
+Internals
+---------
+
+Internally, remote methods are assigned to MQTT topics. When calling a
+remote method named `example/hello` with parameters "world" and 42 via...
+
+```js
+rpc.call("example/hello", "world", 42).then((result) => {
+    ...
+})
+```
+
+..the following JSON-RPC 2.0 request message is sent to the permanent MQTT
+topic `example/hello/request`:
+
+```json
+{
+    "jsonrpc": "2.0",
+    "id":      "d1acc980-0e4e-11e8-98f0-ab5030b47df4:d1db7aa0-0e4e-11e8-b1d9-5f0ab230c0d9",
+    "method":  "example/hello",
+    "params":  [ "world", 42 ]
+}
+```
+
+Beforehand, this `example/hello` method should have been registered with...
+
+```js
+rpc.register("example/hello", (a1, a2) => {
+    return `${a1}:${a2}`
+})
+```
+
+...and then its result, here `"world:42"`, is then
+sent back as the following JSON-RPC 2.0 success response
+message to the temporary (client-specific) MQTT topic
+`example/hello/response/d1acc980-0e4e-11e8-98f0-ab5030b47df4`:
+
+```json
+{
+    "jsonrpc": "2.0",
+    "id":      "d1acc980-0e4e-11e8-98f0-ab5030b47df4:d1db7aa0-0e4e-11e8-b1d9-5f0ab230c0d9",
+    "result":  "world:42"
+}
+```
+
+The JSON-RPC 2.0 `id` field always consists of `<cid>:<rid>`, where
+`<cid>` is the UUID v1 of the MQTT-JSON-RPC instance and `<rid>` is
+the UUID v1 of the particular method request. The `<cid>` is used for
+sending back the JSON-RPC 2.0 response message to the requestor only.
 
 License
 -------
