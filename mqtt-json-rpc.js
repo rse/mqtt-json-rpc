@@ -161,8 +161,10 @@ class API {
                 timer = null
             }, this.options.timeout)
             this.requests[rid] = (err, result) => {
-                if (timer !== null)
+                if (timer !== null) {
                     clearTimeout(timer)
+                    timer = null
+                }
                 if (err) reject(err)
                 else     resolve(result)
             }
