@@ -22,8 +22,8 @@ rpc.on("connect", () => {
         console.log("example/hello: request: ", a1, a2)
         return `${a1}:${a2}`
     })
-    rpc.call("example/hello", [ "world", 42 ], (err, data) => {
-        console.log("example/hello response: ", data)
+    rpc.call("example/hello", "world", 42).then((result) => {
+        console.log("example/hello response: ", result)
         rpc.end()
     })
 })

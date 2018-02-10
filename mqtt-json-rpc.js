@@ -139,17 +139,22 @@ class API {
      */
 
     /*  notify peer ("fire and forget")  */
-    notify (method, params) {
+    notify (method, ...params) {
         let request = JSONRPC.notification(method, params)
         request = this.encodr.encode(request)
         this.mqtt.publish(`${method}/request`, request, { qos: 0 })
     }
 
     /*  call peer ("request and response")  */
-    call (method, params, callback) {
+    call (method, ...params) {
         /*  remember callback and create JSON-RPC request  */
         let rid = `${this.cid}:${(new UUID(1)).format("std")}`
-        this.requests[rid] = callback
+        let promise = new Promise((resolve, reject) => {
+            this.requests[rid] = (err, result) => {
+                if (err) reject(err)
+                else     resolve(result)
+            }
+        })
         let request = JSONRPC.request(rid, method, params)
 
         /*  subscribe for response  */
@@ -164,6 +169,8 @@ class API {
                 callback(err, undefined)
             }
         })
+
+        return promise
     }
 
     /*  handle incoming RPC method response  */
