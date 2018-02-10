@@ -121,6 +121,11 @@ The API of MQTT-JSON-RPC is a superset of the original
 [MQTT.js](https://www.npmjs.com/package/mqtt) API because it is just a
 wrapper around it with the following additional methods:
 
+- `constructor(mqtt: MQTT, encoding?: string]): MQTT-JSON-RPC`:<br/>
+  Create the [MQTT.js](https://www.npmjs.com/package/mqtt) API wrapper.
+  The `mqtt` is the [MQTT.js](https://www.npmjs.com/package/mqtt) instance.
+  The optional `encoding` can be either `json` (default), `msgpack` or `cbor`.
+
 - `MQTT-JSON-RPC#register(method: string, callback: (...args: any[]) => any): void`:<br/>
   Register a method. The `method` has to be a valid MQTT topic
   name. The `callback` is called with the `params` passed to
