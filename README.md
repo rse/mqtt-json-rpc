@@ -80,6 +80,8 @@ sending back the JSON-RPC 2.0 response message to the requestor only.
 Usage
 -----
 
+### Server:
+
 ```js
 let mqtt    = require("mqtt")
 let mqttRPC = require("./mqtt-json-rpc")
@@ -94,6 +96,8 @@ rpc.on("connect", () => {
     })
 })
 ```
+
+### Client:
 
 ```js
 let mqtt    = require("mqtt")
