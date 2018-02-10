@@ -1,14 +1,14 @@
 
-let mqtt    = require("mqtt")
-let mqttRPC = require("./mqtt-json-rpc")
+let MQTT = require("mqtt")
+let RPC  = require("./mqtt-json-rpc")
 
-let mqttClient = mqtt.connect("wss://127.0.0.1:8889", {
+let mqtt = MQTT.connect("wss://127.0.0.1:8889", {
     rejectUnauthorized: false,
     username: "example",
     password: "example"
 })
 
-let rpc = new mqttRPC(mqttClient)
+let rpc = new RPC(mqtt)
 
 rpc.on("error",     (err)            => { console.log("ERROR", err) })
 rpc.on("offline",   ()               => { console.log("OFFLINE") })
