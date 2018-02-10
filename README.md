@@ -124,10 +124,10 @@ wrapper around it with the following additional methods:
 - `MQTT-JSON-RPC#register(method: string, callback: (...args: any[]) => any): void`:<br/>
   Register a method. The `method` has to be a valid MQTT topic
   name. The `callback` is called with the `params` passed to
-  `MQTT-JSON-RPC#notify()` or `MQTT-JSON-RPC#call()`. For
-  `MQTT-JSON-RPC#notify()`, the return value of `callback` will be
-  ignored. For `MQTT-JSON-RPC#call()`, the return value of `callback`
-  will resolve the promise returned by `MQTT-JSON-RPC#call()`.
+  the remote `MQTT-JSON-RPC#notify()` or `MQTT-JSON-RPC#call()`. For
+  a remote `MQTT-JSON-RPC#notify()`, the return value of `callback` will be
+  ignored. For a remote `MQTT-JSON-RPC#call()`, the return value of `callback`
+  will resolve the promise returned by the remote `MQTT-JSON-RPC#call()`.
   Internally, on the MQTT broker the topic `${method}/request` is
   subscribed.
 
