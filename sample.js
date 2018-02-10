@@ -18,12 +18,12 @@ rpc.on("message",   (topic, message) => { console.log("RECEIVED", topic, message
 
 rpc.on("connect", () => {
     console.log("CONNECTED")
-    rpc.register("example/foo", (...args) => {
-        console.log("example/foo: request: ", args)
-        return { ok: args }
+    rpc.register("example/hello", (a1, a2) => {
+        console.log("example/hello: request: ", a1, a2)
+        return `${a1}:${a2}`
     })
-    rpc.call("example/foo", [ "hello", "world" ], (err, data) => {
-        console.log("example/foo response: ", data)
+    rpc.call("example/hello", [ "world", 42 ], (err, data) => {
+        console.log("example/hello response: ", data)
         rpc.end()
     })
 })

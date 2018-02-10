@@ -28,8 +28,15 @@ protocol. It allows a request/response-style communication over
 the plain message protocol [MQTT](http://mqtt.org).
 
 Internally, remote methods are assigned to MQTT topics. When calling a
-remote method named `example/hello` with parameters "world" and 42, the
-following JSON-RPC 2.0 request message is sent to the permanent MQTT
+remote method named `example/hello` with parameters "world" and 42...
+
+```js
+rpc.call("example/hello", [ "world", 42 ], (err, data) => {
+    ...
+})
+```
+
+..the following JSON-RPC 2.0 request message is sent to the permanent MQTT
 topic `example/hello/request`:
 
 ```json
@@ -41,8 +48,16 @@ topic `example/hello/request`:
 }
 ```
 
-The result, e.g. `"world:42"`, of method `example/hello`
-is then sent back as the following JSON-RPC 2.0 success
+Bevorhand, this `example/hello` method should have been registered with...
+
+```js
+rpc.register("example/hello", (a1, a2) => {
+    return `${a1}:${a2}`
+})
+```
+
+...and then its result, here `"world:42"`, is then
+sent back as the following JSON-RPC 2.0 success
 message to the temporary (client-specific) MQTT topic
 `example/hello/response/d1acc980-0e4e-11e8-98f0-ab5030b47df4`:
 
