@@ -30,7 +30,7 @@
         "mqtt":                    "~2.15.2"
     },
     "dependencies": {
-        "pure-uuid":               "~1.4.11",
+        "pure-uuid":               "~1.5.0",
         "encodr":                  "~1.0.4",
         "jsonrpc-lite":            "~1.3.0"
     },
