@@ -23,8 +23,10 @@ rpc.on("connect", () => {
         return `${a1}:${a2}`
     })
     rpc.call("example/hello", "world", 42).then((result) => {
-        console.log("example/hello response: ", result)
+        console.log("example/hello sucess: ", result)
         rpc.end()
+    }).catch((err) => {
+        console.log("example/hello error: ", err)
     })
 })
 

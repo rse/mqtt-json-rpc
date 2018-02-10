@@ -29,15 +29,21 @@ const Encodr  = require("encodr")
 
 /*  the API class  */
 class API {
-    constructor (mqtt, encoding = "json") {
+    constructor (mqtt, options = {}) {
+        /*  determine options  */
+        this.options = Object.assign({
+            encoding: "json",
+            timeout:  10 * 1000
+        }, options)
+
         /*  remember the underlying MQTT Client instance  */
-        this.mqtt          = mqtt
+        this.mqtt = mqtt
 
         /*  make an encoder  */
-        this.encodr        = new Encodr(encoding)
+        this.encodr = new Encodr(this.options.encoding)
 
         /*  generate unique client identifier  */
-        this.cid           = (new UUID(1)).format("std")
+        this.cid = (new UUID(1)).format("std")
 
         /*  internal states  */
         this.registry      = {}
@@ -150,7 +156,13 @@ class API {
         /*  remember callback and create JSON-RPC request  */
         let rid = `${this.cid}:${(new UUID(1)).format("std")}`
         let promise = new Promise((resolve, reject) => {
+            let timer = setTimeout(() => {
+                reject(new Error("communication timeout"))
+                timer = null
+            }, this.options.timeout)
             this.requests[rid] = (err, result) => {
+                if (timer !== null)
+                    clearTimeout(timer)
                 if (err) reject(err)
                 else     resolve(result)
             }
