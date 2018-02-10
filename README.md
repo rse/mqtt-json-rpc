@@ -58,8 +58,8 @@ const mqtt = MQTT.connect("wss://127.0.0.1:8889", { ... })
 const rpc  = new RPC(mqtt)
 
 rpc.on("connect", () => {
-    rpc.call("example/hello", [ "world", 42 ], (err, data) => {
-        console.log("example/hello response: ", data)
+    rpc.call("example/hello", "world", 42).then((response) => {
+        console.log("example/hello response: ", response)
         rpc.end()
     })
 })
