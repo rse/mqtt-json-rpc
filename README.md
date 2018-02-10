@@ -30,14 +30,14 @@ the plain message protocol [MQTT](http://mqtt.org).
 Usage
 -----
 
-### Server:
+#### Server:
 
 ```js
-let mqtt    = require("mqtt")
-let mqttRPC = require("./mqtt-json-rpc")
+const MQTT = require("mqtt")
+const RPC  = require("mqtt-json-rpc")
 
-let mqttClient = mqtt.connect("wss://127.0.0.1:8889", { ... })
-let rpc = new mqttRPC(mqttClient)
+const mqtt = MQTT.connect("wss://127.0.0.1:8889", { ... })
+const rpc  = new RPC(mqtt)
 
 rpc.on("connect", () => {
     rpc.register("example/hello", (a1, a2) => {
@@ -47,14 +47,14 @@ rpc.on("connect", () => {
 })
 ```
 
-### Client:
+#### Client:
 
 ```js
-let mqtt    = require("mqtt")
-let mqttRPC = require("./mqtt-json-rpc")
+const MQTT = require("mqtt")
+const RPC  = require("mqtt-json-rpc")
 
-let mqttClient = mqtt.connect("wss://127.0.0.1:8889", { ... })
-let rpc = new mqttRPC(mqttClient)
+const mqtt = MQTT.connect("wss://127.0.0.1:8889", { ... })
+const rpc  = new RPC(mqtt)
 
 rpc.on("connect", () => {
     rpc.call("example/hello", [ "world", 42 ], (err, data) => {
