@@ -28,7 +28,7 @@ protocol. It allows a request/response-style communication over
 the plain message protocol [MQTT](http://mqtt.org).
 
 Internally, remote methods are assigned to MQTT topics. When calling a
-remote method named `example/hello` with parameters "world" and 42...
+remote method named `example/hello` with parameters "world" and 42 via...
 
 ```js
 rpc.call("example/hello", [ "world", 42 ], (err, data) => {
@@ -48,7 +48,7 @@ topic `example/hello/request`:
 }
 ```
 
-Bevorhand, this `example/hello` method should have been registered with...
+Beforehand, this `example/hello` method should have been registered with...
 
 ```js
 rpc.register("example/hello", (a1, a2) => {
@@ -57,7 +57,7 @@ rpc.register("example/hello", (a1, a2) => {
 ```
 
 ...and then its result, here `"world:42"`, is then
-sent back as the following JSON-RPC 2.0 success
+sent back as the following JSON-RPC 2.0 success response
 message to the temporary (client-specific) MQTT topic
 `example/hello/response/d1acc980-0e4e-11e8-98f0-ab5030b47df4`:
 
@@ -68,6 +68,11 @@ message to the temporary (client-specific) MQTT topic
     "result":  "world:42"
 }
 ```
+
+The JSON-RPC 2.0 `id` field always consists of `<cid>:<rid>`, where
+`<cid>` is the UUID v1 of the MQTT-JSON-RPC instance and `<rid>` is
+the UUID v1 of the particular method request. The `<cid>` is used for
+sending back the JSON-RPC 2.0 response message to the requestor only.
 
 Usage
 -----
