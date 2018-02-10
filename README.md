@@ -121,12 +121,31 @@ The API of MQTT-JSON-RPC is a superset of the original
 [MQTT.js](https://www.npmjs.com/package/mqtt) API because it is just a
 wrapper around it with the following additional methods:
 
-- `MQTT-JSON-RPC#register(method: string, callback: (err: Error, ...args: any[]) => any): void`
+- `MQTT-JSON-RPC#register(method: string, callback: (...args: any[]) => any): void`:<br/>
+  Register a method. The `method` has to be a valid MQTT topic
+  name. The `callback` is called with the `params` passed to
+  `MQTT-JSON-RPC#notify()` or `MQTT-JSON-RPC#call()`. For
+  `MQTT-JSON-RPC#notify()`, the return value of `callback` will be
+  ignored. For `MQTT-JSON-RPC#call()`, the return value of `callback`
+  will resolve the promise returned by `MQTT-JSON-RPC#call()`.
+  Internally, on the MQTT broker the topic `${method}/request` is
+  subscribed.
 
-- `MQTT-JSON-RPC#unregister(method: string): void`
+- `MQTT-JSON-RPC#unregister(method: string): void`:<br/>
+  Unregister a previously registered method.
+  Internally, on the MQTT broker the topic `${method}/request` is unsubscribed.
 
-- `MQTT-JSON-RPC#notify(method: string, ): void`
+- `MQTT-JSON-RPC#notify(method: string, ...params: any[]): void`:<br/>
+  Notify a method. The remote `MQTT-JSON-RPC#register()` `callback` is called
+  with `params` and its return value silently ignored.
 
+- `MQTT-JSON-RPC#call(method: string, ...params: any[]): Promise`:<br/>
+  Call a method. The remote `MQTT-JSON-RPC#register()` `callback` is
+  called with `params` and its return value resolves the returned
+  `Promise`. If the remote `callback` throws an exception, this rejects
+  the returned `Promise`. Internally, on the MQTT broker the topic
+  `${method}/response/<cid>` is temporarily subscribed for receiving the
+  response.
 
 License
 -------
