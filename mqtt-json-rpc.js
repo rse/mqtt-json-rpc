@@ -123,7 +123,7 @@ class API {
                 return JSONRPC.success(parsed.payload.id, response)
             }, (error) => {
                 /*  create JSON-RPC error response  */
-                return JSONRPC.error(parsed.payload.id, response)
+                return JSONRPC.error(parsed.payload.id, error)
             }).then((response) => {
                 /*  send MQTT response message  */
                 response = this.encodr.encode(response)
@@ -166,7 +166,7 @@ class API {
             if (err) {
                 /*  handle request failure  */
                 this._responseUnsubscribe(method)
-                callback(err, undefined)
+                this.requests[rid](err, undefined)
             }
         })
 
