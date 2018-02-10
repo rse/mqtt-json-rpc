@@ -22,10 +22,11 @@ About
 
 This is a small wrapper around the
 [MQTT.js](https://www.npmjs.com/package/mqtt) API of
-[Node.js](https://nodejs.org/), for Remote Procedure Call (RPC)
+[Node.js](https://nodejs.org/), for
+[Remote Procedure Call](https://en.wikipedia.org/wiki/Remote_procedure_call) (RPC)
 communication based on the [JSON-RPC](http://www.jsonrpc.org/)
-protocol. It allows a request/response-style communication over
-the plain message protocol [MQTT](http://mqtt.org).
+protocol. This allows a bi-directional request/response-style communication over
+the uni-directional message protocol [MQTT](http://mqtt.org).
 
 Usage
 -----
