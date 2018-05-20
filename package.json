@@ -22,16 +22,16 @@
         "eslint-config-standard":  "11.0.0",
         "eslint-plugin-standard":  "3.1.0",
         "eslint-plugin-promise":   "3.7.0",
-        "eslint-plugin-import":    "2.11.0",
+        "eslint-plugin-import":    "2.12.0",
         "eslint-plugin-node":      "6.0.1",
-        "mqtt":                    "2.17.0"
+        "mqtt":                    "2.18.0"
     },
     "peerDependencies": {
-        "mqtt":                    "2.17.0"
+        "mqtt":                    "2.18.0"
     },
     "dependencies": {
         "pure-uuid":               "1.5.2",
-        "encodr":                  "1.0.13",
+        "encodr":                  "1.0.14",
         "jsonrpc-lite":            "1.3.1"
     },
     "engines": {
