@@ -18,7 +18,7 @@
     "bugs":     "https://github.com/rse/mqtt-json-rpc/issues",
     "devDependencies": {
         "babel-eslint":            "10.0.1",
-        "eslint":                  "5.8.0",
+        "eslint":                  "5.10.0",
         "eslint-config-standard":  "12.0.0",
         "eslint-plugin-standard":  "4.0.0",
         "eslint-plugin-promise":   "4.0.1",
@@ -31,7 +31,7 @@
     },
     "dependencies": {
         "pure-uuid":               "1.5.5",
-        "encodr":                  "1.1.0",
+        "encodr":                  "1.2.0",
         "jsonrpc-lite":            "2.0.1"
     },
     "engines": {
