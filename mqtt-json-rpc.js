@@ -83,7 +83,15 @@ class API {
         if (this.registry[method] !== undefined)
             throw new Error(`register: method "${method}" already registered`)
         this.registry[method] = callback
-        this.mqtt.subscribe(`${method}/request`, { qos: 2 })
+        return new Promise((resolve, reject) => {
+            this.mqtt.subscribe(`${method}/request`, { qos: 2 }, (err, granted) => {
+                if (err) {
+                    reject(err)
+                } else {
+                    resolve(granted)
+                }
+            })
+        })
     }
 
     /*  unregister an RPC method  */
@@ -91,7 +99,15 @@ class API {
         if (this.registry[method] === undefined)
             throw new Error(`unregister: method "${method}" not registered`)
         delete this.registry[method]
-        this.mqtt.unsubscribe(`${method}/request`)
+        return new Promise((resolve, reject) => {
+            this.mqtt.unsubscribe(`${method}/request`, (error, packet) => {
+                if (error) {
+                    reject(error)
+                } else {
+                    resolve(packet)
+                }
+            })
+        })
     }
 
     /*  handle incoming RPC method request  */
@@ -244,4 +260,3 @@ class API {
 
 /*  export the standard way  */
 module.exports = API
-
