@@ -1,6 +1,6 @@
 {
     "name":        "mqtt-json-rpc",
-    "version":     "1.0.0",
+    "version":     "1.1.0",
     "description": "JSON-RPC protocol over MQTT communication",
     "keywords":    [ "json-rpc", "json", "rpc", "mqtt" ],
     "main":        "./mqtt-json-rpc.js",
