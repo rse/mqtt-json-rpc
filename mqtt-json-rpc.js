@@ -114,10 +114,10 @@ class API {
         let m
         if ((m = topic.match(/^(.+)\/request$/)) === null)
             return
-        let method = m[1]
+        const method = m[1]
 
         /*  ensure we handle only JSON-RPC payloads  */
-        let parsed = JSONRPC.parseObject(this.encodr.decode(message))
+        const parsed = JSONRPC.parseObject(this.encodr.decode(message))
         if (!(typeof parsed === "object" && typeof parsed.type === "string"))
             return
 
@@ -147,8 +147,8 @@ class API {
             }).then((response) => {
                 /*  send MQTT response message  */
                 response = this.encodr.encode(response)
-                let m = parsed.payload.id.match(/^(.+):.+$/)
-                let cid = m[1]
+                const m = parsed.payload.id.match(/^(.+):.+$/)
+                const cid = m[1]
                 this.mqtt.publish(`${method}/response/${cid}`, response, { qos: 0 })
             })
         }
@@ -168,8 +168,8 @@ class API {
     /*  call peer ("request and response")  */
     call (method, ...params) {
         /*  remember callback and create JSON-RPC request  */
-        let rid = `${this.cid}:${(new UUID(1)).format("std")}`
-        let promise = new Promise((resolve, reject) => {
+        const rid = `${this.cid}:${(new UUID(1)).format("std")}`
+        const promise = new Promise((resolve, reject) => {
             let timer = setTimeout(() => {
                 reject(new Error("communication timeout"))
                 timer = null
@@ -207,20 +207,20 @@ class API {
         let m
         if ((m = topic.match(/^(.+)\/response\/(.+)$/)) === null)
             return
-        let [ , method, cid ] = m
+        const [ , method, cid ] = m
 
         /*  ensure we really handle only MQTT RPC responses for us  */
         if (cid !== this.cid)
             return
 
         /*  ensure we handle only JSON-RPC payloads  */
-        let parsed = JSONRPC.parseObject(this.encodr.decode(message))
+        const parsed = JSONRPC.parseObject(this.encodr.decode(message))
         if (!(typeof parsed === "object" && typeof parsed.type === "string"))
             return
 
         /*  dispatch according to JSON-RPC type  */
         if (parsed.type === "success" || parsed.type === "error") {
-            let rid = parsed.payload.id
+            const rid = parsed.payload.id
             if (typeof this.requests[rid] === "function") {
                 /*  call callback function  */
                 if (parsed.type === "success")
@@ -237,7 +237,7 @@ class API {
 
     /*  subscribe to RPC response  */
     _responseSubscribe (method) {
-        let topic = `${method}/response/${this.cid}`
+        const topic = `${method}/response/${this.cid}`
         if (this.subscriptions[topic] === undefined) {
             this.subscriptions[topic] = 0
             this.mqtt.subscribe(topic, { qos: 2 })
@@ -247,7 +247,7 @@ class API {
 
     /*  unsubscribe from RPC response  */
     _responseUnsubscribe (method) {
-        let topic = `${method}/response/${this.cid}`
+        const topic = `${method}/response/${this.cid}`
         this.subscriptions[topic]--
         if (this.subscriptions[topic] === 0) {
             delete this.subscriptions[topic]

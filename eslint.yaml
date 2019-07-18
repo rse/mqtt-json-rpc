@@ -63,4 +63,6 @@ rules:
     curly:                               off
     space-in-parens:                     off
     no-console:                          off
+    lines-between-class-members:         off
+    array-bracket-spacing:               off
 
