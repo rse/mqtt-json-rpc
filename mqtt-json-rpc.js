@@ -85,11 +85,10 @@ class API {
         this.registry[method] = callback
         return new Promise((resolve, reject) => {
             this.mqtt.subscribe(`${method}/request`, { qos: 2 }, (err, granted) => {
-                if (err) {
+                if (err)
                     reject(err)
-                } else {
+                else
                     resolve(granted)
-                }
             })
         })
     }
@@ -100,12 +99,11 @@ class API {
             throw new Error(`unregister: method "${method}" not registered`)
         delete this.registry[method]
         return new Promise((resolve, reject) => {
-            this.mqtt.unsubscribe(`${method}/request`, (error, packet) => {
-                if (error) {
-                    reject(error)
-                } else {
+            this.mqtt.unsubscribe(`${method}/request`, (err, packet) => {
+                if (err)
+                    reject(err)
+                else
                     resolve(packet)
-                }
             })
         })
     }
@@ -260,3 +258,4 @@ class API {
 
 /*  export the standard way  */
 module.exports = API
+
