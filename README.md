@@ -77,7 +77,7 @@ wrapper around it with the following additional methods:
   The `mqtt` is the [MQTT.js](https://www.npmjs.com/package/mqtt) instance.
   The optional `encoding` can be either `json` (default), `msgpack` or `cbor`.
 
-- `MQTT-JSON-RPC#register(method: string, callback: (...args: any[]) => any): void`:<br/>
+- `MQTT-JSON-RPC#register(method: string, callback: (...args: any[]) => any): Promise`:<br/>
   Register a method. The `method` has to be a valid MQTT topic
   name. The `callback` is called with the `params` passed to
   the remote `MQTT-JSON-RPC#notify()` or `MQTT-JSON-RPC#call()`. For
@@ -87,7 +87,7 @@ wrapper around it with the following additional methods:
   Internally, on the MQTT broker the topic `${method}/request` is
   subscribed.
 
-- `MQTT-JSON-RPC#unregister(method: string): void`:<br/>
+- `MQTT-JSON-RPC#unregister(method: string): Promise`:<br/>
   Unregister a previously registered method.
   Internally, on the MQTT broker the topic `${method}/request` is unsubscribed.
 
