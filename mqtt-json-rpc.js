@@ -137,13 +137,13 @@ class API {
             if (typeof this.registry[method] === "function")
                 response = Promise.resolve().then(() => this.registry[method](...parsed.payload.params))
             else
-                response = Promise.resolve(JSONRPC.error(parsed.payload.id, "unknown method"))
+                response = Promise.reject(JSONRPC.JsonRpcError.methodNotFound({ method, id: parsed.payload.id }))
             response.then((response) => {
                 /*  create JSON-RPC success response  */
                 return JSONRPC.success(parsed.payload.id, response)
             }, (error) => {
                 /*  create JSON-RPC error response  */
-                return JSONRPC.error(parsed.payload.id, error)
+                return _buildError(parsed.payload, error)
             }).then((response) => {
                 /*  send MQTT response message  */
                 response = this.encodr.encode(response)
@@ -256,6 +256,37 @@ class API {
     }
 }
 
+const _buildError = (payload, error) => {
+    let rpcError = null
+    switch (typeof error) {
+        case "undefined":
+            rpcError = new JSONRPC.JsonRpcError("undefined error", 0)
+            break
+        case "string":
+            rpcError = new JSONRPC.JsonRpcError(error, -1)
+            break
+        case "number":
+        case "bigint":
+            rpcError = new JSONRPC.JsonRpcError("application error", error)
+            break
+        case "object":
+            if (!!error) {
+                if (error instanceof JSONRPC.JsonRpcError)
+                    rpcError = error
+                else if (error instanceof Error)
+                    rpcError = new JSONRPC.JsonRpcError(error.toString(), -100, error)
+                else
+                    rpcError = new JSONRPC.JsonRpcError("application error", -100, error)
+            }
+            else // null
+                rpcError = new JSONRPC.JsonRpcError("undefined error", 0)
+            break
+        default:
+            rpcError = new JSONRPC.JsonRpcError("unspecified error", 0, error)
+            break
+    }
+    return JSONRPC.error(payload.id, rpcError)
+}
+
 /*  export the standard way  */
 module.exports = API
-
