@@ -18,21 +18,21 @@
     "bugs":     "https://github.com/rse/mqtt-json-rpc/issues",
     "devDependencies": {
         "babel-eslint":            "10.1.0",
-        "eslint":                  "7.4.0",
-        "eslint-config-standard":  "14.1.1",
-        "eslint-plugin-standard":  "4.0.1",
+        "eslint":                  "7.14.0",
+        "eslint-config-standard":  "16.0.2",
+        "eslint-plugin-standard":  "4.1.0",
         "eslint-plugin-promise":   "4.2.1",
-        "eslint-plugin-import":    "2.22.0",
+        "eslint-plugin-import":    "2.22.1",
         "eslint-plugin-node":      "11.1.0",
-        "mqtt":                    "4.1.0"
+        "mqtt":                    "4.2.5"
     },
     "peerDependencies": {
         "mqtt":                    ">=3.0.0"
     },
     "dependencies": {
         "pure-uuid":               "1.6.1",
-        "encodr":                  "1.2.3",
-        "jsonrpc-lite":            "2.1.0"
+        "encodr":                  "1.2.4",
+        "jsonrpc-lite":            "2.2.0"
     },
     "engines": {
         "node":                    ">=10.0.0"
