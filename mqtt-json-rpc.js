@@ -148,7 +148,7 @@ class API {
                 return JSONRPC.success(parsed.payload.id, response)
             }, (error) => {
                 /*  create JSON-RPC error response  */
-                return _buildError(parsed.payload, error)
+                return this._buildError(parsed.payload, error)
             }).then((response) => {
                 /*  send MQTT response message  */
                 response = this.encodr.encode(response)
@@ -259,39 +259,41 @@ class API {
             this.mqtt.unsubscribe(topic)
         }
     }
-}
 
-const _buildError = (payload, error) => {
-    let rpcError = null
-    switch (typeof error) {
-        case "undefined":
-            rpcError = new JSONRPC.JsonRpcError("undefined error", 0)
-            break
-        case "string":
-            rpcError = new JSONRPC.JsonRpcError(error, -1)
-            break
-        case "number":
-        case "bigint":
-            rpcError = new JSONRPC.JsonRpcError("application error", error)
-            break
-        case "object":
-            if (!!error) {
-                if (error instanceof JSONRPC.JsonRpcError)
-                    rpcError = error
-                else if (error instanceof Error)
-                    rpcError = new JSONRPC.JsonRpcError(error.toString(), -100, error)
-                else
-                    rpcError = new JSONRPC.JsonRpcError("application error", -100, error)
-            }
-            else // null
+    /*  determine RPC error  */
+    _buildError (payload, error) {
+        let rpcError
+        switch (typeof error) {
+            case "undefined":
                 rpcError = new JSONRPC.JsonRpcError("undefined error", 0)
-            break
-        default:
-            rpcError = new JSONRPC.JsonRpcError("unspecified error", 0, error)
-            break
+                break
+            case "string":
+                rpcError = new JSONRPC.JsonRpcError(error, -1)
+                break
+            case "number":
+            case "bigint":
+                rpcError = new JSONRPC.JsonRpcError("application error", error)
+                break
+            case "object":
+                if (error === null)
+                    rpcError = new JSONRPC.JsonRpcError("undefined error", 0)
+                else {
+                    if (error instanceof JSONRPC.JsonRpcError)
+                        rpcError = error
+                    else if (error instanceof Error)
+                        rpcError = new JSONRPC.JsonRpcError(error.toString(), -100, error)
+                    else
+                        rpcError = new JSONRPC.JsonRpcError("application error", -100, error)
+                }
+                break
+            default:
+                rpcError = new JSONRPC.JsonRpcError("unspecified error", 0, { data: error })
+                break
+        }
+        return JSONRPC.error(payload.id, rpcError)
     }
-    return JSONRPC.error(payload.id, rpcError)
 }
 
 /*  export the standard way  */
 module.exports = API
+
