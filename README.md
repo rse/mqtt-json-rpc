@@ -93,7 +93,7 @@ wrapper around it with the following additional methods:
 
 - `MQTT-JSON-RPC#notify(method: string, ...params: any[]): void`:<br/>
   Notify a method. The remote `MQTT-JSON-RPC#register()` `callback` is called
-  with `params` and its return value silently ignored.
+  with `params` and its return value is silently ignored.
 
 - `MQTT-JSON-RPC#call(method: string, ...params: any[]): Promise`:<br/>
   Call a method. The remote `MQTT-JSON-RPC#register()` `callback` is
@@ -101,13 +101,14 @@ wrapper around it with the following additional methods:
   `Promise`. If the remote `callback` throws an exception, this rejects
   the returned `Promise`. Internally, on the MQTT broker the topic
   `${method}/response/<cid>` is temporarily subscribed for receiving the
-  response.
+  response (`<cid>` is a UUID v1 to uniquely identify the MQTT-JSON-RPC
+  caller instance).
 
 Internals
 ---------
 
 Internally, remote methods are assigned to MQTT topics. When calling a
-remote method named `example/hello` with parameters "world" and 42 via...
+remote method named `example/hello` with parameters `"world"` and `42` via...
 
 ```js
 rpc.call("example/hello", "world", 42).then((result) => {
@@ -115,7 +116,7 @@ rpc.call("example/hello", "world", 42).then((result) => {
 })
 ```
 
-..the following JSON-RPC 2.0 request message is sent to the permanent MQTT
+...the following JSON-RPC 2.0 request message is sent to the permanent MQTT
 topic `example/hello/request`:
 
 ```json
