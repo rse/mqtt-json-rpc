@@ -77,6 +77,11 @@ wrapper around it with the following additional methods:
   The `mqtt` is the [MQTT.js](https://www.npmjs.com/package/mqtt) instance.
   The optional `encoding` can be either `json` (default), `msgpack` or `cbor`.
 
+- `MQTT-JSON-RPC#registered(method: string): boolean`:<br/>
+  Check for the previous registration of a method. The `method` has to
+  be a valid MQTT topic name. The method returns `true` if `method` is
+  already registered, else it returns `false`.
+
 - `MQTT-JSON-RPC#register(method: string, callback: (...args: any[]) => any): Promise`:<br/>
   Register a method. The `method` has to be a valid MQTT topic
   name. The `callback` is called with the `params` passed to

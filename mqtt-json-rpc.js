@@ -78,6 +78,11 @@ class API {
      *  RPC server/response side
      */
 
+    /*  check for the registration of an RPC method  */
+    registered (method) {
+        return (this.registry[method] !== undefined)
+    }
+
     /*  register an RPC method  */
     register (method, callback) {
         if (this.registry[method] !== undefined)
