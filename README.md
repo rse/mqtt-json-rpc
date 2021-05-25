@@ -221,7 +221,7 @@ rpc.on("reconnect", ()               => { console.log("RECONNECT") })
 rpc.on("message",   (topic, message) => { console.log("RECEIVED", topic, message.toString()) })
 
 rpc.on("connect", () => {
-    console.log("CONNECTED")
+    console.log("CONNECT")
     rpc.register("example/hello", (a1, a2) => {
         console.log("example/hello: request: ", a1, a2)
         return `${a1}:${a2}`
@@ -239,7 +239,7 @@ The output will be:
 
 ```
 $ node sample.js
-CONNECTED
+CONNECT
 RECEIVED example/hello/request {"jsonrpc":"2.0","id":"1099cb50-bd2b-11eb-8198-43568ad728c4:10bf7bc0-bd2b-11eb-bac6-439c565b651a","method":"example/hello","params":["world",42]}
 example/hello: request:  world 42
 RECEIVED example/hello/response/1099cb50-bd2b-11eb-8198-43568ad728c4 {"jsonrpc":"2.0","id":"1099cb50-bd2b-11eb-8198-43568ad728c4:10bf7bc0-bd2b-11eb-bac6-439c565b651a","result":"world:42"}

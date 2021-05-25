@@ -17,7 +17,7 @@ rpc.on("reconnect", ()               => { console.log("RECONNECT") })
 rpc.on("message",   (topic, message) => { console.log("RECEIVED", topic, message.toString()) })
 
 rpc.on("connect", () => {
-    console.log("CONNECTED")
+    console.log("CONNECT")
     rpc.register("example/hello", (a1, a2) => {
         console.log("example/hello: request: ", a1, a2)
         return `${a1}:${a2}`
