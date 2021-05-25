@@ -159,6 +159,94 @@ The JSON-RPC 2.0 `id` field always consists of `<cid>:<rid>`, where
 the UUID v1 of the particular method request. The `<cid>` is used for
 sending back the JSON-RPC 2.0 response message to the requestor only.
 
+Example
+-------
+
+For a real test-drive of MQTT-JSON-RPC, install the
+[Mosquitto](https://mosquitto.org/) MQTT broker with at least a "MQTT
+over Secure-WebSockets" lister in the `mosquitto.conf` file like...
+
+```
+[...]
+
+password_file        mosquitto-pwd.txt
+acl_file             mosquitto-acl.txt
+
+[...]
+
+#   additional listener (wss: MQTT over WebSockets+SSL/TLS)
+listener             8889 127.0.0.1
+max_connections      -1
+protocol             websockets
+cafile               mosquitto-ca.crt.pem
+certfile             mosquitto-sv.crt.pem
+keyfile              mosquitto-sv.key.pem
+require_certificate  false
+
+[...]
+```
+
+...and an access control list in `mosquitto-acl.txt` like...
+
+```
+user    example
+topic   readwrite example/#
+```
+
+...and an `example` user in `mosquitto-pwd.txt` like:
+
+```
+example:$6$awYNe6oCAi+xlvo5$mWIUqyy4I0O3nJ99lP1mkRVqsDGymF8en5NChQQxf7KrVJLUp1SzrrVDe94wWWJa3JGIbOXD9wfFGZdi948e6A==
+```
+
+Then test-drive MQTT-JSON-RPC with a complete [sample](sample.js) to see
+MQTT-JSON-RPC in action and tracing its communication:
+
+```js
+const MQTT = require("mqtt")
+const RPC  = require("mqtt-json-rpc")
+
+const mqtt = MQTT.connect("wss://127.0.0.1:8889", {
+    rejectUnauthorized: false,
+    username: "example",
+    password: "example"
+})
+
+const rpc = new RPC(mqtt)
+
+rpc.on("error",     (err)            => { console.log("ERROR", err) })
+rpc.on("offline",   ()               => { console.log("OFFLINE") })
+rpc.on("close",     ()               => { console.log("CLOSE") })
+rpc.on("reconnect", ()               => { console.log("RECONNECT") })
+rpc.on("message",   (topic, message) => { console.log("RECEIVED", topic, message.toString()) })
+
+rpc.on("connect", () => {
+    console.log("CONNECTED")
+    rpc.register("example/hello", (a1, a2) => {
+        console.log("example/hello: request: ", a1, a2)
+        return `${a1}:${a2}`
+    })
+    rpc.call("example/hello", "world", 42).then((result) => {
+        console.log("example/hello sucess: ", result)
+        rpc.end()
+    }).catch((err) => {
+        console.log("example/hello error: ", err)
+    })
+})
+```
+
+The output will be:
+
+```
+$ node sample.js
+CONNECTED
+RECEIVED example/hello/request {"jsonrpc":"2.0","id":"1099cb50-bd2b-11eb-8198-43568ad728c4:10bf7bc0-bd2b-11eb-bac6-439c565b651a","method":"example/hello","params":["world",42]}
+example/hello: request:  world 42
+RECEIVED example/hello/response/1099cb50-bd2b-11eb-8198-43568ad728c4 {"jsonrpc":"2.0","id":"1099cb50-bd2b-11eb-8198-43568ad728c4:10bf7bc0-bd2b-11eb-bac6-439c565b651a","result":"world:42"}
+example/hello sucess:  world:42
+CLOSE
+```
+
 License
 -------
 
