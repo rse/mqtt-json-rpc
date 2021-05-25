@@ -36,6 +36,6 @@
         "node":                    ">=10.0.0"
     },
     "scripts": {
-        "prepublishOnly":          "eslint --config eslint.yaml mqtt-json-rpc.js sample.js"
+        "prepublishOnly":          "eslint --config eslint.yaml mqtt-json-rpc.js sample/sample.js"
     }
 }
