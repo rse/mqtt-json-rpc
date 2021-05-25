@@ -199,7 +199,7 @@ topic   readwrite example/#
 example:$6$awYNe6oCAi+xlvo5$mWIUqyy4I0O3nJ99lP1mkRVqsDGymF8en5NChQQxf7KrVJLUp1SzrrVDe94wWWJa3JGIbOXD9wfFGZdi948e6A==
 ```
 
-Then test-drive MQTT-JSON-RPC with a complete [sample](sample.js) to see
+Then test-drive MQTT-JSON-RPC with a complete [sample](sample/sample.js) to see
 MQTT-JSON-RPC in action and tracing its communication:
 
 ```js

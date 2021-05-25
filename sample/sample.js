@@ -1,6 +1,6 @@
 
 const MQTT = require("mqtt")
-const RPC  = require("./mqtt-json-rpc")
+const RPC  = require("mqtt-json-rpc")
 
 const mqtt = MQTT.connect("wss://127.0.0.1:8889", {
     rejectUnauthorized: false,
