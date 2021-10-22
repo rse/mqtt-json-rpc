@@ -20,7 +20,7 @@
         "babel-eslint":            "10.1.0",
         "eslint":                  "7.32.0",
         "eslint-config-standard":  "16.0.3",
-        "eslint-plugin-import":    "2.24.0",
+        "eslint-plugin-import":    "2.25.2",
         "eslint-plugin-node":      "11.1.0",
         "mqtt":                    "4.2.8"
     },
@@ -29,7 +29,7 @@
     },
     "dependencies": {
         "pure-uuid":               "1.6.2",
-        "encodr":                  "1.3.0",
+        "encodr":                  "1.3.1",
         "jsonrpc-lite":            "2.2.0"
     },
     "engines": {
