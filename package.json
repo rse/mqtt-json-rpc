@@ -17,12 +17,11 @@
     "homepage":    "https://github.com/rse/mqtt-json-rpc",
     "bugs":        "https://github.com/rse/mqtt-json-rpc/issues",
     "devDependencies": {
-        "babel-eslint":            "10.1.0",
-        "eslint":                  "7.32.0",
-        "eslint-config-standard":  "16.0.3",
-        "eslint-plugin-import":    "2.25.2",
+        "eslint":                  "8.13.0",
+        "eslint-config-standard":  "17.0.0",
+        "eslint-plugin-import":    "2.26.0",
         "eslint-plugin-node":      "11.1.0",
-        "mqtt":                    "4.2.8"
+        "mqtt":                    "4.3.7"
     },
     "peerDependencies": {
         "mqtt":                    ">=4.0.0"
