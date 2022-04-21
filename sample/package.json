@@ -3,17 +3,17 @@
     "version":                             "0.0.0",
     "description":                         "",
     "dependencies": {
-        "@babel/core":                     "7.15.0",
-        "mqtt":                            "4.2.8",
+        "@babel/core":                     "7.17.9",
+        "mqtt":                            "4.3.7",
         "mqtt-json-rpc":                   ".."
     },
     "devDependencies": {
-        "grunt":                           "1.4.1",
+        "grunt":                           "1.5.2",
         "grunt-cli":                       "1.4.3",
         "grunt-browserify":                "6.0.0",
         "browserify":                      "17.0.0",
         "babelify":                        "10.0.0",
-        "@babel/preset-env":               "7.15.0"
+        "@babel/preset-env":               "7.16.11"
     },
     "scripts": {
         "build":                           "grunt default",
