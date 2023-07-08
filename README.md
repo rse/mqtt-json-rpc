@@ -69,7 +69,7 @@ Application Programming Interface
 ---------------------------------
 
 The MQTT-JSON-RPC API provides the following methods (check out the
-corresponding [./mqtt-json-rpc.d.ts](TypeScript definition) file):
+corresponding [TypeScript definition](mqtt-json-rpc.d.ts)) file):
 
 - `constructor(mqtt: MQTT, options?: { encoding?: string, timeout?: number }): MQTT-JSON-RPC`:<br/>
   The `mqtt` is the [MQTT.js](https://www.npmjs.com/package/mqtt) instance.
