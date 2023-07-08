@@ -20,13 +20,13 @@ $ npm install mqtt mqtt-json-rpc
 About
 -----
 
-This is a addon for the
+This is an addon API for the
 [MQTT.js](https://www.npmjs.com/package/mqtt) API of
 [Node.js](https://nodejs.org/), for
 [Remote Procedure Call](https://en.wikipedia.org/wiki/Remote_procedure_call) (RPC)
 communication based on the [JSON-RPC](http://www.jsonrpc.org/)
 protocol. This allows a bi-directional request/response-style communication over
-the uni-directional message protocol [MQTT](http://mqtt.org).
+the technically uni-directional message protocol [MQTT](http://mqtt.org).
 
 Usage
 -----
@@ -139,7 +139,7 @@ rpc.register("example/hello", (a1, a2) => {
 })
 ```
 
-...and then its result, here `"world:42"`, is then
+...and then its result, in the above `rpc.call` example `"world:42"`, is then
 sent back as the following JSON-RPC 2.0 success response
 message to the temporary (client-specific) MQTT topic
 `example/hello/response/d1acc980-0e4e-11e8-98f0-ab5030b47df4`:
@@ -191,7 +191,7 @@ user    example
 topic   readwrite example/#
 ```
 
-...and an `example` user in `mosquitto-pwd.txt` like:
+...and an `example` user (with password `example`) in `mosquitto-pwd.txt` like:
 
 ```
 example:$6$awYNe6oCAi+xlvo5$mWIUqyy4I0O3nJ99lP1mkRVqsDGymF8en5NChQQxf7KrVJLUp1SzrrVDe94wWWJa3JGIbOXD9wfFGZdi948e6A==
