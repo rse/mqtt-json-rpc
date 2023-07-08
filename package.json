@@ -28,8 +28,8 @@
         "mqtt":                    ">=4.0.0"
     },
     "dependencies": {
-        "pure-uuid":               "1.6.3",
-        "encodr":                  "1.3.4",
+        "pure-uuid":               "1.6.4",
+        "encodr":                  "1.3.5",
         "jsonrpc-lite":            "2.2.0"
     },
     "engines": {
