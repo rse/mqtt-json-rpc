@@ -4,6 +4,7 @@
     "description": "JSON-RPC protocol over MQTT communication",
     "keywords":    [ "json-rpc", "json", "rpc", "mqtt" ],
     "main":        "./mqtt-json-rpc.js",
+    "types":       "./mqtt-json-rpc.d.ts",
     "license":     "MIT",
     "repository": {
         "type":    "git",
