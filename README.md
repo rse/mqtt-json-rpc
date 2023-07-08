@@ -20,7 +20,7 @@ $ npm install mqtt mqtt-json-rpc
 About
 -----
 
-This is a small wrapper around the
+This is a addon for the
 [MQTT.js](https://www.npmjs.com/package/mqtt) API of
 [Node.js](https://nodejs.org/), for
 [Remote Procedure Call](https://en.wikipedia.org/wiki/Remote_procedure_call) (RPC)
@@ -40,7 +40,7 @@ const RPC  = require("mqtt-json-rpc")
 const mqtt = MQTT.connect("wss://127.0.0.1:8889", { ... })
 const rpc  = new RPC(mqtt)
 
-rpc.on("connect", () => {
+mqtt.on("connect", () => {
     rpc.register("example/hello", (a1, a2) => {
         console.log("example/hello: request: ", a1, a2)
         return `${a1}:${a2}`
@@ -57,10 +57,10 @@ const RPC  = require("mqtt-json-rpc")
 const mqtt = MQTT.connect("wss://127.0.0.1:8889", { ... })
 const rpc  = new RPC(mqtt)
 
-rpc.on("connect", () => {
+mqtt.on("connect", () => {
     rpc.call("example/hello", "world", 42).then((response) => {
         console.log("example/hello response: ", response)
-        rpc.end()
+        mqtt.end()
     })
 })
 ```
@@ -68,14 +68,12 @@ rpc.on("connect", () => {
 Application Programming Interface
 ---------------------------------
 
-The API of MQTT-JSON-RPC is a superset of the original
-[MQTT.js](https://www.npmjs.com/package/mqtt) API because it is just a
-wrapper around it with the following additional methods:
+The MQTT-JSON-RPC API provides the following methods:
 
-- `constructor(mqtt: MQTT, encoding?: string]): MQTT-JSON-RPC`:<br/>
-  Create the [MQTT.js](https://www.npmjs.com/package/mqtt) API wrapper.
+- `constructor(mqtt: MQTT, options?: { encoding?: string, timeout?: number }): MQTT-JSON-RPC`:<br/>
   The `mqtt` is the [MQTT.js](https://www.npmjs.com/package/mqtt) instance.
-  The optional `encoding` can be either `json` (default), `msgpack` or `cbor`.
+  The optional `encoding` option can be either `json` (default), `msgpack` or `cbor`.
+  The optional `timeout` option is the timeout in seconds.
 
 - `MQTT-JSON-RPC#registered(method: string): boolean`:<br/>
   Check for the previous registration of a method. The `method` has to
@@ -214,13 +212,13 @@ const mqtt = MQTT.connect("wss://127.0.0.1:8889", {
 
 const rpc = new RPC(mqtt)
 
-rpc.on("error",     (err)            => { console.log("ERROR", err) })
-rpc.on("offline",   ()               => { console.log("OFFLINE") })
-rpc.on("close",     ()               => { console.log("CLOSE") })
-rpc.on("reconnect", ()               => { console.log("RECONNECT") })
-rpc.on("message",   (topic, message) => { console.log("RECEIVED", topic, message.toString()) })
+mqtt.on("error",     (err)            => { console.log("ERROR", err) })
+mqtt.on("offline",   ()               => { console.log("OFFLINE") })
+mqtt.on("close",     ()               => { console.log("CLOSE") })
+mqtt.on("reconnect", ()               => { console.log("RECONNECT") })
+mqtt.on("message",   (topic, message) => { console.log("RECEIVED", topic, message.toString()) })
 
-rpc.on("connect", () => {
+mqtt.on("connect", () => {
     console.log("CONNECT")
     rpc.register("example/hello", (a1, a2) => {
         console.log("example/hello: request: ", a1, a2)
@@ -228,7 +226,7 @@ rpc.on("connect", () => {
     })
     rpc.call("example/hello", "world", 42).then((result) => {
         console.log("example/hello sucess: ", result)
-        rpc.end()
+        mqtt.end()
     }).catch((err) => {
         console.log("example/hello error: ", err)
     })

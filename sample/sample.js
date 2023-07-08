@@ -10,13 +10,13 @@ const mqtt = MQTT.connect("wss://127.0.0.1:8889", {
 
 const rpc = new RPC(mqtt)
 
-rpc.on("error",     (err)            => { console.log("ERROR", err) })
-rpc.on("offline",   ()               => { console.log("OFFLINE") })
-rpc.on("close",     ()               => { console.log("CLOSE") })
-rpc.on("reconnect", ()               => { console.log("RECONNECT") })
-rpc.on("message",   (topic, message) => { console.log("RECEIVED", topic, message.toString()) })
+mqtt.on("error",     (err)            => { console.log("ERROR", err) })
+mqtt.on("offline",   ()               => { console.log("OFFLINE") })
+mqtt.on("close",     ()               => { console.log("CLOSE") })
+mqtt.on("reconnect", ()               => { console.log("RECONNECT") })
+mqtt.on("message",   (topic, message) => { console.log("RECEIVED", topic, message.toString()) })
 
-rpc.on("connect", () => {
+mqtt.on("connect", () => {
     console.log("CONNECT")
     rpc.register("example/hello", (a1, a2) => {
         console.log("example/hello: request: ", a1, a2)
@@ -24,7 +24,7 @@ rpc.on("connect", () => {
     })
     rpc.call("example/hello", "world", 42).then((result) => {
         console.log("example/hello sucess: ", result)
-        rpc.end()
+        mqtt.end()
     }).catch((err) => {
         console.log("example/hello error: ", err)
     })

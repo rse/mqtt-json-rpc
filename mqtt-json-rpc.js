@@ -57,23 +57,6 @@ class API {
         })
     }
 
-    /*  just pass-through the entire MQTT Client API  */
-    on                    (...args) { return this.mqtt.on(...args) }
-    addListener           (...args) { return this.mqtt.addListener(...args) }
-    removeListener        (...args) { return this.mqtt.removeListener(...args) }
-    publish               (...args) { return this.mqtt.publish(...args) }
-    subscribe             (...args) { return this.mqtt.subscribe(...args) }
-    unsubscribe           (...args) { return this.mqtt.unsubscribe(...args) }
-    end                   (...args) { return this.mqtt.end(...args) }
-    removeOutgoingMessage (...args) { return this.mqtt.removeOutgoingMessage(...args) }
-    reconnect             (...args) { return this.mqtt.reconnect(...args) }
-    handleMessage         (...args) { return this.mqtt.handleMessage(...args) }
-    get connected         ()        { return this.mqtt.connected }
-    set connected         (value)   { this.mqtt.connected = value }
-    getLastMessageId      (...args) { return this.mqtt.getLastMessageId(...args) }
-    get reconnecting      ()        { return this.mqtt.reconnecting }
-    set reconnecting      (value)   { this.mqtt.reconnecting = value }
-
     /*
      *  RPC server/response side
      */
