@@ -17,8 +17,8 @@
     "homepage":    "https://github.com/rse/mqtt-json-rpc",
     "bugs":        "https://github.com/rse/mqtt-json-rpc/issues",
     "devDependencies": {
-        "eslint":                  "8.36.0",
-        "eslint-config-standard":  "17.0.0",
+        "eslint":                  "8.44.0",
+        "eslint-config-standard":  "17.1.0",
         "eslint-plugin-import":    "2.27.5",
         "eslint-plugin-node":      "11.1.0",
         "mqtt":                    "4.3.7"
