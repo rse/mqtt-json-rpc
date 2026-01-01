@@ -27,6 +27,8 @@ import path              from "node:path"
 import { fileURLToPath } from "node:url"
 import js                from "@eslint/js"
 import { FlatCompat }    from "@eslint/eslintrc"
+import pluginTS          from "typescript-eslint"
+import parserTS          from "@typescript-eslint/parser"
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -37,36 +39,92 @@ const compat = new FlatCompat({
 })
 
 export default [
-    ...compat.extends("eslint:recommended"), {
-    languageOptions: {
-        globals: {
-            ...globals.browser,
-            ...Object.fromEntries(Object.entries(globals.node).map(([key]) => [key, "off"])),
-            ...globals.commonjs,
-            ...globals.worker,
-            ...globals.serviceworker,
-            process: true,
+    ...compat.extends("eslint:recommended"),
+    ...pluginTS.configs.strict,
+    ...pluginTS.configs.stylistic,
+    {
+        files: [ "**/*.ts" ],
+        languageOptions: {
+            ecmaVersion: 2022,
+            sourceType:  "module",
+            parser:      parserTS,
+            parserOptions: {
+                ecmaFeatures: { jsx: false }
+            },
+            globals: {
+                ...globals.browser,
+                ...Object.fromEntries(Object.entries(globals.node).map(([key]) => [key, "off"])),
+                ...globals.commonjs,
+                ...globals.worker,
+                ...globals.serviceworker,
+                process: true,
+            },
         },
-        ecmaVersion: 12,
-        sourceType: "module",
-        parserOptions: { ecmaFeatures: { jsx: false } }
+        rules: {
+            "indent":                                      [ "error", 4, { SwitchCase: 1 } ],
+            "linebreak-style":                             [ "error", "unix" ],
+            "semi":                                        [ "error", "never" ],
+            "operator-linebreak":                          [ "error", "after", { overrides: { "&&": "before", "||": "before", ":": "before" } } ],
+            "brace-style":                                 [ "error", "stroustrup", { allowSingleLine: true } ],
+            "quotes":                                      [ "error", "double" ],
+            "no-multi-spaces":                             "off",
+            "no-multiple-empty-lines":                     "off",
+            "key-spacing":                                 "off",
+            "object-property-newline":                     "off",
+            "curly":                                       "off",
+            "space-in-parens":                             "off",
+            "no-console":                                  "off",
+            "lines-between-class-members":                 "off",
+            "array-bracket-spacing":                       "off",
+
+            "@typescript-eslint/no-empty-function":            "off",
+            "@typescript-eslint/no-explicit-any":              "off",
+            "@typescript-eslint/no-unused-vars":               "off",
+            "@typescript-eslint/no-non-null-assertion":        "off",
+            "@typescript-eslint/consistent-type-definitions":  "off",
+            "@typescript-eslint/array-type":                   "off",
+            "@typescript-eslint/consistent-indexed-object-style": "off",
+            "@typescript-eslint/no-dynamic-delete":            "off",
+            "@typescript-eslint/no-inferrable-types":          "off",
+            "@typescript-eslint/consistent-generic-constructors": "off",
+        },
     },
-    rules: {
-        "indent":                      [ "error", 4, { SwitchCase: 1 } ],
-        "linebreak-style":             [ "error", "unix" ],
-        "semi":                        [ "error", "never" ],
-        "operator-linebreak":          [ "error", "after", { overrides: { "&&": "before", "||": "before", ":": "before" } } ],
-        "brace-style":                 [ "error", "stroustrup", { allowSingleLine: true } ],
-        "quotes":                      [ "error", "double" ],
-        "no-multi-spaces":             "off",
-        "no-multiple-empty-lines":     "off",
-        "key-spacing":                 "off",
-        "object-property-newline":     "off",
-        "curly":                       "off",
-        "space-in-parens":             "off",
-        "no-console":                  "off",
-        "lines-between-class-members": "off",
-        "array-bracket-spacing":       "off",
-    },
-}]
+    {
+        files: [ "**/*.js" ],
+        languageOptions: {
+            ecmaVersion: 2022,
+            sourceType:  "module",
+            parserOptions: {
+                ecmaFeatures: { jsx: false }
+            },
+            globals: {
+                ...globals.browser,
+                ...Object.fromEntries(Object.entries(globals.node).map(([key]) => [key, "off"])),
+                ...globals.commonjs,
+                ...globals.worker,
+                ...globals.serviceworker,
+                process: true,
+            },
+        },
+        rules: {
+            "indent":                      [ "error", 4, { SwitchCase: 1 } ],
+            "linebreak-style":             [ "error", "unix" ],
+            "semi":                        [ "error", "never" ],
+            "operator-linebreak":          [ "error", "after", { overrides: { "&&": "before", "||": "before", ":": "before" } } ],
+            "brace-style":                 [ "error", "stroustrup", { allowSingleLine: true } ],
+            "quotes":                      [ "error", "double" ],
+            "no-multi-spaces":             "off",
+            "no-multiple-empty-lines":     "off",
+            "key-spacing":                 "off",
+            "object-property-newline":     "off",
+            "curly":                       "off",
+            "space-in-parens":             "off",
+            "no-console":                              "off",
+            "lines-between-class-members":             "off",
+            "array-bracket-spacing":                   "off",
+
+            "@typescript-eslint/no-require-imports":   "off",
+        },
+    }
+]
 

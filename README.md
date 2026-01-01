@@ -81,7 +81,7 @@ corresponding [TypeScript definition](mqtt-json-rpc.d.ts)) file):
   be a valid MQTT topic name. The method returns `true` if `method` is
   already registered, else it returns `false`.
 
-- `MQTT-JSON-RPC#register(method: string, callback: (...args: any[]) => any): Promise`:<br/>
+- `MQTT-JSON-RPC#register(method: string, callback: (...args: any[]) => any): Promise<boolean>`:<br/>
   Register a method. The `method` has to be a valid MQTT topic
   name. The `callback` is called with the `params` passed to
   the remote `MQTT-JSON-RPC#notify()` or `MQTT-JSON-RPC#call()`. For
@@ -91,7 +91,7 @@ corresponding [TypeScript definition](mqtt-json-rpc.d.ts)) file):
   Internally, on the MQTT broker the topic `${method}/request` is
   subscribed.
 
-- `MQTT-JSON-RPC#unregister(method: string): Promise`:<br/>
+- `MQTT-JSON-RPC#unregister(method: string): Promise<void>`:<br/>
   Unregister a previously registered method.
   Internally, on the MQTT broker the topic `${method}/request` is unsubscribed.
 
@@ -99,7 +99,7 @@ corresponding [TypeScript definition](mqtt-json-rpc.d.ts)) file):
   Notify a method. The remote `MQTT-JSON-RPC#register()` `callback` is called
   with `params` and its return value is silently ignored.
 
-- `MQTT-JSON-RPC#call(method: string, ...params: any[]): Promise`:<br/>
+- `MQTT-JSON-RPC#call(method: string, ...params: any[]): Promise<any>`:<br/>
   Call a method. The remote `MQTT-JSON-RPC#register()` `callback` is
   called with `params` and its return value resolves the returned
   `Promise`. If the remote `callback` throws an exception, this rejects
@@ -154,9 +154,10 @@ message to the temporary (client-specific) MQTT topic
 ```
 
 The JSON-RPC 2.0 `id` field always consists of `<cid>:<rid>`, where
-`<cid>` is the UUID v1 of the MQTT-JSON-RPC instance and `<rid>` is
+`<cid>` is the UUID v1 of the MQTT-JSON-RPC client instance and `<rid>` is
 the UUID v1 of the particular method request. The `<cid>` is used for
 sending back the JSON-RPC 2.0 response message to the requestor only.
+The `<rid>` is used for correlating the response to the request only.
 
 Example
 -------
@@ -249,7 +250,7 @@ CLOSE
 License
 -------
 
-Copyright (c) 2018-2023 Dr. Ralf S. Engelschall (http://engelschall.com/)
+Copyright (c) 2018-2025 Dr. Ralf S. Engelschall (http://engelschall.com/)
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the

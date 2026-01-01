@@ -1,4 +1,2 @@
 node_modules
 sample/sample.bundle.js
-mqtt-json-rpc.js
-mqtt-json-rpc.d.ts
