@@ -33,15 +33,9 @@ interface APIOptions {
     encoding?: "json" | "cbor" | "msgpack"
     timeout?:  number
 }
-interface Registry {
-    [ method: string ]: ((...params: any[]) => any) | undefined
-}
-interface Requests {
-    [ rid: string ]: ((err: any, result: any) => void) | undefined
-}
-interface Subscriptions {
-    [ topic: string ]: number | undefined
-}
+type Registry      = Record<string, ((...params: any[]) => any) | undefined>
+type Requests      = Record<string, ((err: any, result: any) => void) | undefined>
+type Subscriptions = Record<string, number | undefined>
 
 /*  the API class  */
 class API {
