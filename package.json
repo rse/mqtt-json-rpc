@@ -4,7 +4,7 @@
     "description":                    "JSON-RPC protocol over MQTT communication",
     "keywords":                       [ "json-rpc", "json", "rpc", "mqtt" ],
     "license":                        "MIT",
-    "repository":                     "git+https://github.com/rse/mqtt-json-rpc.git",
+    "repository":                     { "type": "git", "url": "git+https://github.com/rse/mqtt-json-rpc.git" },
     "homepage":                       "https://github.com/rse/mqtt-json-rpc",
     "bugs":                           "https://github.com/rse/mqtt-json-rpc/issues",
     "author": {
