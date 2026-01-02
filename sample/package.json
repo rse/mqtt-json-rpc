@@ -16,7 +16,7 @@
     },
     "scripts": {
         "build":                           "vite --config vite.mjs build --mode production",
-        "start":                           "node sample.js",
+        "start":                           "node sample.ts",
         "start:browser":                   "open sample.html",
         "clean":                           "rimraf node_modules sample.bundle.js"
     }

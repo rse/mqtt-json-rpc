@@ -1,6 +1,7 @@
 
-import * as Vite          from "vite"
-import { viteSingleFile } from "vite-plugin-singlefile"
+import * as Vite             from "vite"
+import { tscPlugin }         from "@wroud/vite-plugin-tsc"
+import { viteSingleFile }    from "vite-plugin-singlefile"
 
 export default Vite.defineConfig(({ command, mode }) => ({
     logLevel: "info",
@@ -8,6 +9,11 @@ export default Vite.defineConfig(({ command, mode }) => ({
     base:     "",
     root:     "",
     plugins: [
+        tscPlugin({
+            tscArgs:        [ "--project", "tsc.json" ],
+            packageManager: "npx",
+            prebuild:       true
+        }),
         viteSingleFile()
     ],
     build: {
