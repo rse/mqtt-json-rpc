@@ -1,45 +1,58 @@
 {
-    "name":                          "mqtt-json-rpc",
-    "version":                       "2.0.0",
-    "description":                   "JSON-RPC protocol over MQTT communication",
-    "keywords":                      [ "json-rpc", "json", "rpc", "mqtt" ],
-    "main":                          "./mqtt-json-rpc.js",
-    "types":                         "./mqtt-json-rpc.d.ts",
-    "license":                       "MIT",
-    "repository":                    "git+https://github.com/rse/mqtt-json-rpc.git",
-    "homepage":                      "https://github.com/rse/mqtt-json-rpc",
-    "bugs":                          "https://github.com/rse/mqtt-json-rpc/issues",
+    "name":                           "mqtt-json-rpc",
+    "version":                        "2.0.0",
+    "description":                    "JSON-RPC protocol over MQTT communication",
+    "keywords":                       [ "json-rpc", "json", "rpc", "mqtt" ],
+    "license":                        "MIT",
+    "repository":                     "git+https://github.com/rse/mqtt-json-rpc.git",
+    "homepage":                       "https://github.com/rse/mqtt-json-rpc",
+    "bugs":                           "https://github.com/rse/mqtt-json-rpc/issues",
     "author": {
-        "name":                      "Dr. Ralf S. Engelschall",
-        "email":                     "rse@engelschall.com",
-        "url":                       "http://engelschall.com"
+        "name":                       "Dr. Ralf S. Engelschall",
+        "email":                      "rse@engelschall.com",
+        "url":                        "http://engelschall.com"
+    },
+    "type":                           "module",
+    "types":                          "./dst/mqtt-json-rpc.d.ts",
+    "module":                         "./dst/mqtt-json-rpc.esm.js",
+    "main":                           "./dst/mqtt-json-rpc.cjs.js",
+    "browser":                        "./dst/mqtt-json-rpc.umd.js",
+    "exports": {
+        ".": {
+            "import":                 { "types": "./dst/mqtt-json-rpc.d.ts", "default": "./dst/mqtt-json-rpc.esm.js" },
+            "require":                { "types": "./dst/mqtt-json-rpc.d.ts", "default": "./dst/mqtt-json-rpc.cjs.js" }
+        }
     },
     "devDependencies": {
-        "@rse/stx":                  "1.1.4",
-        "shx":                       "0.4.0",
-        "eslint":                    "9.39.2",
-        "eslint-plugin-node":        "11.1.0",
-        "globals":                   "16.5.0",
-        "@eslint/js":                "9.39.2",
-        "@eslint/eslintrc":          "3.3.3",
-        "typescript":                "5.9.3",
-        "typescript-eslint":         "8.51.0",
-        "@typescript-eslint/parser": "8.51.0",
-        "mqtt":                      "5.14.1"
+        "@rse/stx":                   "1.1.4",
+        "shx":                        "0.4.0",
+        "eslint":                     "9.39.2",
+        "eslint-plugin-node":         "11.1.0",
+        "globals":                    "17.0.0",
+        "@eslint/js":                 "9.39.2",
+        "@eslint/eslintrc":           "3.3.3",
+        "typescript":                 "5.9.3",
+        "typescript-eslint":          "8.51.0",
+        "@typescript-eslint/parser":  "8.51.0",
+        "mqtt":                       "5.14.1",
+        "vite":                       "7.3.0",
+        "vite-plugin-singlefile":     "2.3.0",
+        "vite-plugin-node-polyfills": "0.24.0",
+        "@wroud/vite-plugin-tsc":     "0.12.2"
     },
     "peerDependencies": {
-        "mqtt":                      ">=4.0.0"
+        "mqtt":                       ">=4.0.0"
     },
     "dependencies": {
-        "pure-uuid":                 "2.0.0",
-        "encodr":                    "1.4.1",
-        "jsonrpc-lite":              "2.2.0"
+        "pure-uuid":                  "2.0.0",
+        "encodr":                     "1.4.1",
+        "jsonrpc-lite":               "2.2.0"
     },
     "engines": {
-        "node":                      ">=12.0.0"
+        "node":                       ">=16.0.0"
     },
     "scripts": {
-        "prepublishOnly":            "npm start build",
-        "start":                     "stx -v4 -c stx.conf"
+        "prepublishOnly":             "npm start build",
+        "start":                      "stx -v4 -c etc/stx.conf"
     }
 }
