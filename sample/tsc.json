@@ -1,0 +1,26 @@
+{
+    "compilerOptions": {
+        "outDir":                  ".",
+        "target":                  "es2024",
+        "module":                  "ESNext",
+        "moduleResolution":        "Bundler",
+        "useDefineForClassFields": false,
+        "composite":               false,
+        "strict":                  true,
+        "strictFunctionTypes":     true,
+        "resolveJsonModule":       false,
+        "isolatedModules":         false,
+        "esModuleInterop":         false,
+        "lib":                     [ "es2024", "dom" ],
+        "skipLibCheck":            true,
+        "declaration":             false,
+        "noEmit":                  false,
+        "rootDir":                 "."
+    },
+    "include": [
+        "./*.ts"
+    ],
+    "exclude": [
+        "./node_modules"
+    ]
+}
