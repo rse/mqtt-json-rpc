@@ -54,10 +54,11 @@ class API {
 
     constructor (mqtt: any, options: APIOptions = {}) {
         /*  determine options  */
-        this.options = Object.assign({
+        this.options = {
             encoding: "json",
-            timeout:  10 * 1000
-        }, options)
+            timeout:  10 * 1000,
+            ...options
+        }
 
         /*  remember the underlying MQTT Client instance  */
         this.mqtt = mqtt
