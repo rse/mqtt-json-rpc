@@ -53,6 +53,7 @@
     },
     "scripts": {
         "prepublishOnly":             "npm start build",
-        "start":                      "stx -v4 -c etc/stx.conf"
+        "start":                      "stx -v4 -c etc/stx.conf",
+        "test":                       "npm start test"
     }
 }
