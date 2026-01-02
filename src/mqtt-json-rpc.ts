@@ -28,49 +28,54 @@ import UUID                       from "pure-uuid"
 import JSONRPC, { JsonRpcError }  from "jsonrpc-lite"
 import Encodr                     from "encodr"
 
-/*  type definitions  */
+/*  MQTT topic making and matching  */
+type TopicRequestMake   = (method: string) => string
+type TopicResponseMake  = (method: string, clientId: string) => string
+type TopicRequestMatch  = (topic: string) => RegExpMatchArray | null
+type TopicResponseMatch = (topic: string) => RegExpMatchArray | null
+
+/*  API option type  */
 interface APIOptions {
-    clientId: string
-    encoding: "json" | "cbor" | "msgpack"
-    timeout:  number
+    clientId:           string
+    encoding:           "json" | "cbor" | "msgpack"
+    timeout:            number
+    topicRequestMake:   TopicRequestMake
+    topicResponseMake:  TopicResponseMake
+    topicRequestMatch:  TopicRequestMatch
+    topicResponseMatch: TopicResponseMatch
 }
-type Registry      = Map<string, (...params: any[]) => any>
-type Requests      = Map<string, (err: any, result: any) => void>
-type Subscriptions = Map<string, number>
 
 /*  the API class  */
 class API {
     private options:       APIOptions
-    private mqtt:          MqttClient
     private encodr:        Encodr
-    private registry:      Registry
-    private requests:      Requests
-    private subscriptions: Subscriptions
+    private registry       = new Map<string, (...params: any[]) => any>()
+    private requests       = new Map<string, (err: any, result: any) => void>()
+    private subscriptions  = new Map<string, number>()
 
-    constructor (mqtt: MqttClient, options: Partial<APIOptions> = {}) {
+    constructor (
+        private mqtt: MqttClient,
+        options: Partial<APIOptions> = {}
+    ) {
         /*  determine options  */
         this.options = {
-            clientId: (new UUID(1)).format("std"),
-            encoding: "json",
-            timeout:  10 * 1000,
+            clientId:           (new UUID(1)).format("std"),
+            encoding:           "json",
+            timeout:            10 * 1000,
+            topicRequestMake:   (method) => `${method}/request`,
+            topicResponseMake:  (method, clientId) => `${method}/response/${clientId}`,
+            topicRequestMatch:  (topic) => topic.match(/^(.+?)\/request$/),
+            topicResponseMatch: (topic) => topic.match(/^(.+?)\/response\/(.+)$/),
             ...options
         }
-
-        /*  remember the underlying MQTT Client instance  */
-        this.mqtt = mqtt
 
         /*  establish an encoder  */
         this.encodr = new Encodr(this.options.encoding)
 
-        /*  internal states  */
-        this.registry      = new Map()
-        this.requests      = new Map()
-        this.subscriptions = new Map()
-
         /*  hook into the MQTT message processing  */
         this.mqtt.on("message", (topic: string, message: Buffer) => {
-            this._onServer(topic, message)
-            this._onClient(topic, message)
+            this._onServerMessage(topic, message)
+            this._onClientMessage(topic, message)
         })
     }
 
@@ -89,7 +94,8 @@ class API {
             throw new Error(`register: method "${method}" already registered`)
         this.registry.set(method, callback)
         return new Promise((resolve, reject) => {
-            this.mqtt.subscribe(`${method}/request`, { qos: 2 }, (err: Error | null, granted: any) => {
+            const topic = this.options.topicRequestMake(method)
+            this.mqtt.subscribe(topic, { qos: 2 }, (err: Error | null, granted: any) => {
                 if (err)
                     reject(err)
                 else
@@ -104,7 +110,8 @@ class API {
             throw new Error(`unregister: method "${method}" not registered`)
         this.registry.delete(method)
         return new Promise((resolve, reject) => {
-            this.mqtt.unsubscribe(`${method}/request`, (err?: Error, packet?: any) => {
+            const topic = this.options.topicRequestMake(method)
+            this.mqtt.unsubscribe(topic, (err?: Error, packet?: any) => {
                 if (err)
                     reject(err)
                 else
@@ -114,21 +121,24 @@ class API {
     }
 
     /*  handle incoming RPC method request  */
-    private _onServer (topic: string, message: Buffer): void {
-        /*  ensure we handle only MQTT RPC requests  */
-        let m: RegExpMatchArray | null
-        if ((m = topic.match(/^(.+)\/request$/)) === null)
+    private _onServerMessage (topic: string, message: Buffer): void {
+        /*  ensure we handle only MQTT JSON-RPC requests  */
+        if (this.options.topicRequestMatch(topic) === null)
             return
-        const method: string = m[1]
 
-        /*  ensure we handle only JSON-RPC payloads  */
-        const parsed: any = JSONRPC.parseObject(this.encodr.decode(message))
+        /*  try to parse payload as JSON-RPC payload  */
+        let parsed: any
+        try {
+            parsed = JSONRPC.parseObject(this.encodr.decode(message))
+        }
+        catch (_error: any) {
+            return
+        }
         if (!(typeof parsed === "object" && typeof parsed.type === "string"))
             return
 
-        /*  ensure we handle a consistent JSON-RPC method request  */
-        if (parsed.payload.method !== method)
-            return
+        /*  determine method from JSON-RPC payload  */
+        const method = parsed.payload.method
 
         /*  dispatch according to JSON-RPC type  */
         if (parsed.type === "notification") {
@@ -156,7 +166,8 @@ class API {
                     throw new Error("invalid request id format")
                 const encoded = this.encodr.encode(rpcResponse) as string | Buffer
                 const clientId: string = idMatch[1]
-                this.mqtt.publish(`${method}/response/${clientId}`, encoded, { qos: 0 })
+                const topic = this.options.topicResponseMake(method, clientId)
+                this.mqtt.publish(topic, encoded, { qos: 0 })
             }).catch((err: Error) => {
                 this.mqtt.emit("error", err)
             })
@@ -169,9 +180,10 @@ class API {
 
     /*  notify peer ("fire and forget")  */
     notify (method: string, ...params: any[]): void {
+        const topic = this.options.topicRequestMake(method)
         let request: any = JSONRPC.notification(method, params)
         request = this.encodr.encode(request)
-        this.mqtt.publish(`${method}/request`, request, { qos: 0 })
+        this.mqtt.publish(topic, request, { qos: 0 })
     }
 
     /*  call peer ("request and response")  */
@@ -201,8 +213,9 @@ class API {
         let request: any = JSONRPC.request(rid, method, params)
 
         /*  send MQTT request message  */
+        const topic = this.options.topicRequestMake(method)
         request = this.encodr.encode(request)
-        this.mqtt.publish(`${method}/request`, request, { qos: 2 }, (err?: Error) => {
+        this.mqtt.publish(topic, request, { qos: 2 }, (err?: Error) => {
             const callback = this.requests.get(rid)
             if (err && callback !== undefined) {
                 /*  handle request failure  */
@@ -216,21 +229,30 @@ class API {
     }
 
     /*  handle incoming RPC method response  */
-    private _onClient (topic: string, message: Buffer): void {
-        /*  ensure we handle only MQTT RPC responses  */
+    private _onClientMessage (topic: string, message: Buffer): void {
+        /*  ensure we handle only MQTT JSON-RPC responses  */
         let m: RegExpMatchArray | null
-        if ((m = topic.match(/^(.+)\/response\/(.+)$/)) === null)
+        if ((m = this.options.topicResponseMatch(topic)) === null)
             return
-        const [ , method, clientId ] = m
 
         /*  ensure we really handle only MQTT RPC responses for us  */
+        const clientId = m[2]
         if (clientId !== this.options.clientId)
             return
 
-        /*  ensure we handle only JSON-RPC payloads  */
-        const parsed: any = JSONRPC.parseObject(this.encodr.decode(message))
+        /*  try to parse payload as JSON-RPC payload  */
+        let parsed: any
+        try {
+            parsed = JSONRPC.parseObject(this.encodr.decode(message))
+        }
+        catch (_error: any) {
+            return
+        }
         if (!(typeof parsed === "object" && typeof parsed.type === "string"))
             return
+
+        /*  determine method from JSON-RPC payload  */
+        const method = parsed.payload.method
 
         /*  dispatch according to JSON-RPC type  */
         if (parsed.type === "success" || parsed.type === "error") {
@@ -252,7 +274,7 @@ class API {
 
     /*  subscribe to RPC response  */
     private _responseSubscribe (method: string): void {
-        const topic: string = `${method}/response/${this.options.clientId}`
+        const topic = this.options.topicResponseMake(method, this.options.clientId)
         if (!this.subscriptions.has(topic)) {
             this.subscriptions.set(topic, 0)
             this.mqtt.subscribe(topic, { qos: 2 }, (err: Error | null) => {
@@ -265,7 +287,7 @@ class API {
 
     /*  unsubscribe from RPC response  */
     private _responseUnsubscribe (method: string): void {
-        const topic: string = `${method}/response/${this.options.clientId}`
+        const topic = this.options.topicResponseMake(method, this.options.clientId)
         if (!this.subscriptions.has(topic))
             return
         this.subscriptions.set(topic, this.subscriptions.get(topic)! - 1)
