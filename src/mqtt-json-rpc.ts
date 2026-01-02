@@ -142,10 +142,9 @@ export default class API {
         const method = parsed.payload.method
 
         /*  dispatch according to JSON-RPC type  */
-        if (parsed.type === "notification") {
+        if (parsed.type === "notification")
             /*  just deliver notification  */
             this.registry.get(method)?.(...parsed.payload.params)
-        }
         else if (parsed.type === "request") {
             /*  deliver request and send response  */
             let response: Promise<any>
@@ -189,8 +188,9 @@ export default class API {
 
     /*  call peer ("request and response")  */
     call<C extends ((...params: any[]) => any)> (method: string, ...params: Parameters<C>): Promise<ReturnType<C>> {
-        /*  remember callback and create JSON-RPC request  */
+        /*  determine unique request id  */
         const rid: string = `${this.options.clientId}:${(new UUID(1)).format("std")}`
+
         /*  subscribe for response  */
         this._responseSubscribe(method)
 
@@ -199,8 +199,8 @@ export default class API {
             let timer: NodeJS.Timeout | null = setTimeout(() => {
                 this.requests.delete(rid)
                 this._responseUnsubscribe(method)
-                reject(new Error("communication timeout"))
                 timer = null
+                reject(new Error("communication timeout"))
             }, this.options.timeout!)
             this.requests.set(rid, (err: any, result: any) => {
                 if (timer !== null) {
