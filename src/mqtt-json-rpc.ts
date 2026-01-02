@@ -29,13 +29,13 @@ import JSONRPC, { JsonRpcError }  from "jsonrpc-lite"
 import Encodr                     from "encodr"
 
 /*  MQTT topic making and matching  */
-type TopicRequestMake   = (method: string) => string
-type TopicResponseMake  = (method: string, clientId: string) => string
-type TopicRequestMatch  = (topic: string) => RegExpMatchArray | null
-type TopicResponseMatch = (topic: string) => RegExpMatchArray | null
+export type TopicRequestMake   = (method: string) => string
+export type TopicResponseMake  = (method: string, clientId: string) => string
+export type TopicRequestMatch  = (topic: string) => RegExpMatchArray | null
+export type TopicResponseMatch = (topic: string) => RegExpMatchArray | null
 
 /*  API option type  */
-interface APIOptions {
+export interface APIOptions {
     clientId:           string
     encoding:           "json" | "cbor" | "msgpack"
     timeout:            number
@@ -46,13 +46,14 @@ interface APIOptions {
 }
 
 /*  the API class  */
-class API {
+export default class API {
     private options:       APIOptions
     private encodr:        Encodr
     private registry       = new Map<string, (...params: any[]) => any>()
     private requests       = new Map<string, (err: any, result: any) => void>()
     private subscriptions  = new Map<string, number>()
 
+    /*  construct API class  */
     constructor (
         private mqtt: MqttClient,
         options: Partial<APIOptions> = {}
@@ -334,7 +335,3 @@ class API {
         return JSONRPC.error(payload.id, rpcError)
     }
 }
-
-/*  export the standard way  */
-export default API
-
