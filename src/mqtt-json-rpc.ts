@@ -23,6 +23,7 @@
 */
 
 /*  external requirements  */
+import { MqttClient }             from "mqtt"
 import UUID                       from "pure-uuid"
 import JSONRPC, { JsonRpcError }  from "jsonrpc-lite"
 import Encodr                     from "encodr"
@@ -45,14 +46,14 @@ interface Subscriptions {
 /*  the API class  */
 class API {
     private options:       APIOptions
-    private mqtt:          any
+    private mqtt:          MqttClient
     private encodr:        Encodr
     private cid:           string
     private registry:      Registry
     private requests:      Requests
     private subscriptions: Subscriptions
 
-    constructor (mqtt: any, options: APIOptions = {}) {
+    constructor (mqtt: MqttClient, options: APIOptions = {}) {
         /*  determine options  */
         this.options = {
             encoding: "json",
@@ -111,7 +112,7 @@ class API {
             throw new Error(`unregister: method "${method}" not registered`)
         delete this.registry[method]
         return new Promise((resolve, reject) => {
-            this.mqtt.unsubscribe(`${method}/request`, (err: Error | null, packet: any) => {
+            this.mqtt.unsubscribe(`${method}/request`, (err?: Error, packet?: any) => {
                 if (err)
                     reject(err)
                 else
@@ -150,18 +151,22 @@ class API {
                 response = Promise.resolve().then(() => this.registry[method]!(...parsed.payload.params))
             else
                 response = Promise.reject(JsonRpcError.methodNotFound({ method, id: parsed.payload.id }))
-            response.then((response: any) => {
+            response.then((result: any) => {
                 /*  create JSON-RPC success response  */
-                return JSONRPC.success(parsed.payload.id, response)
+                return JSONRPC.success(parsed.payload.id, result)
             }, (error: any) => {
                 /*  create JSON-RPC error response  */
                 return this._buildError(parsed.payload, error)
             }).then((response: any) => {
                 /*  send MQTT response message  */
+                const m = parsed.payload.id.match(/^(.+):.+$/)
+                if (m === null)
+                    throw new Error("invalid request id format")
                 response = this.encodr.encode(response)
-                const m: RegExpMatchArray = parsed.payload.id.match(/^(.+):.+$/)!
                 const cid: string = m[1]
                 this.mqtt.publish(`${method}/response/${cid}`, response, { qos: 0 })
+            }).catch((err: Error) => {
+                this.mqtt.emit("error", err)
             })
         }
     }
@@ -181,8 +186,14 @@ class API {
     call (method: string, ...params: any[]): Promise<any> {
         /*  remember callback and create JSON-RPC request  */
         const rid: string = `${this.cid}:${(new UUID(1)).format("std")}`
+        /*  subscribe for response  */
+        this._responseSubscribe(method)
+
+        /*  create promise for response handling  */
         const promise: Promise<any> = new Promise((resolve, reject) => {
             let timer: NodeJS.Timeout | null = setTimeout(() => {
+                delete this.requests[rid]
+                this._responseUnsubscribe(method)
                 reject(new Error("communication timeout"))
                 timer = null
             }, this.options.timeout!)
@@ -197,16 +208,14 @@ class API {
         })
         let request: any = JSONRPC.request(rid, method, params)
 
-        /*  subscribe for response  */
-        this._responseSubscribe(method)
-
         /*  send MQTT request message  */
         request = this.encodr.encode(request)
         this.mqtt.publish(`${method}/request`, request, { qos: 2 }, (err?: Error) => {
-            if (err) {
+            if (err && this.requests[rid] !== undefined) {
                 /*  handle request failure  */
                 this._responseUnsubscribe(method)
                 this.requests[rid]!(err, undefined)
+                delete this.requests[rid]
             }
         })
 
@@ -219,7 +228,7 @@ class API {
         let m: RegExpMatchArray | null
         if ((m = topic.match(/^(.+)\/response\/(.+)$/)) === null)
             return
-        const [ , method, cid ]: string[] = m
+        const [ , method, cid ] = m
 
         /*  ensure we really handle only MQTT RPC responses for us  */
         if (cid !== this.cid)
@@ -252,7 +261,10 @@ class API {
         const topic: string = `${method}/response/${this.cid}`
         if (this.subscriptions[topic] === undefined) {
             this.subscriptions[topic] = 0
-            this.mqtt.subscribe(topic, { qos: 2 })
+            this.mqtt.subscribe(topic, { qos: 2 }, (err: Error | null) => {
+                if (err)
+                    this.mqtt.emit("error", err)
+            })
         }
         this.subscriptions[topic]!++
     }
@@ -260,10 +272,15 @@ class API {
     /*  unsubscribe from RPC response  */
     private _responseUnsubscribe (method: string): void {
         const topic: string = `${method}/response/${this.cid}`
+        if (this.subscriptions[topic] === undefined)
+            return
         this.subscriptions[topic]!--
         if (this.subscriptions[topic] === 0) {
             delete this.subscriptions[topic]
-            this.mqtt.unsubscribe(topic)
+            this.mqtt.unsubscribe(topic, (err?: Error) => {
+                if (err)
+                    this.mqtt.emit("error", err)
+            })
         }
     }
 
@@ -279,7 +296,7 @@ class API {
                 break
             case "number":
             case "bigint":
-                rpcError = new JsonRpcError("application error", error as number)
+                rpcError = new JsonRpcError("application error", Number(error))
                 break
             case "object":
                 if (error === null)
