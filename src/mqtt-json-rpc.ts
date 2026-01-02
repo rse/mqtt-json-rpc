@@ -90,7 +90,7 @@ export default class API {
     }
 
     /*  register an RPC method  */
-    register (method: string, callback: (...params: any[]) => any): Promise<any> {
+    register<C extends ((...params: any[]) => any)> (method: string, callback: C): Promise<void> {
         if (this.registry.has(method))
             throw new Error(`register: method "${method}" already registered`)
         this.registry.set(method, callback)
@@ -100,13 +100,13 @@ export default class API {
                 if (err)
                     reject(err)
                 else
-                    resolve(granted)
+                    resolve()
             })
         })
     }
 
     /*  unregister an RPC method  */
-    unregister (method: string): Promise<any> {
+    unregister (method: string): Promise<void> {
         if (!this.registry.has(method))
             throw new Error(`unregister: method "${method}" not registered`)
         this.registry.delete(method)
@@ -116,7 +116,7 @@ export default class API {
                 if (err)
                     reject(err)
                 else
-                    resolve(packet)
+                    resolve()
             })
         })
     }
@@ -180,7 +180,7 @@ export default class API {
      */
 
     /*  notify peer ("fire and forget")  */
-    notify (method: string, ...params: any[]): void {
+    notify<P extends any[]> (method: string, ...params: P): void {
         const topic = this.options.topicRequestMake(method)
         let request: any = JSONRPC.notification(method, params)
         request = this.encodr.encode(request)
@@ -188,7 +188,7 @@ export default class API {
     }
 
     /*  call peer ("request and response")  */
-    call (method: string, ...params: any[]): Promise<any> {
+    call<C extends ((...params: any[]) => any)> (method: string, ...params: Parameters<C>): Promise<ReturnType<C>> {
         /*  remember callback and create JSON-RPC request  */
         const rid: string = `${this.options.clientId}:${(new UUID(1)).format("std")}`
         /*  subscribe for response  */
