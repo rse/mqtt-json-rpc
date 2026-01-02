@@ -30,8 +30,9 @@ import Encodr                     from "encodr"
 
 /*  type definitions  */
 interface APIOptions {
-    encoding?: "json" | "cbor" | "msgpack"
-    timeout?:  number
+    clientId: string
+    encoding: "json" | "cbor" | "msgpack"
+    timeout:  number
 }
 type Registry      = Map<string, (...params: any[]) => any>
 type Requests      = Map<string, (err: any, result: any) => void>
@@ -42,14 +43,14 @@ class API {
     private options:       APIOptions
     private mqtt:          MqttClient
     private encodr:        Encodr
-    private cid:           string
     private registry:      Registry
     private requests:      Requests
     private subscriptions: Subscriptions
 
-    constructor (mqtt: MqttClient, options: APIOptions = {}) {
+    constructor (mqtt: MqttClient, options: Partial<APIOptions> = {}) {
         /*  determine options  */
         this.options = {
+            clientId: (new UUID(1)).format("std"),
             encoding: "json",
             timeout:  10 * 1000,
             ...options
@@ -60,9 +61,6 @@ class API {
 
         /*  establish an encoder  */
         this.encodr = new Encodr(this.options.encoding)
-
-        /*  generate unique client identifier  */
-        this.cid = (new UUID(1)).format("std")
 
         /*  internal states  */
         this.registry      = new Map()
@@ -157,8 +155,8 @@ class API {
                 if (idMatch === null)
                     throw new Error("invalid request id format")
                 const encoded = this.encodr.encode(rpcResponse) as string | Buffer
-                const cid: string = idMatch[1]
-                this.mqtt.publish(`${method}/response/${cid}`, encoded, { qos: 0 })
+                const clientId: string = idMatch[1]
+                this.mqtt.publish(`${method}/response/${clientId}`, encoded, { qos: 0 })
             }).catch((err: Error) => {
                 this.mqtt.emit("error", err)
             })
@@ -179,7 +177,7 @@ class API {
     /*  call peer ("request and response")  */
     call (method: string, ...params: any[]): Promise<any> {
         /*  remember callback and create JSON-RPC request  */
-        const rid: string = `${this.cid}:${(new UUID(1)).format("std")}`
+        const rid: string = `${this.options.clientId}:${(new UUID(1)).format("std")}`
         /*  subscribe for response  */
         this._responseSubscribe(method)
 
@@ -223,10 +221,10 @@ class API {
         let m: RegExpMatchArray | null
         if ((m = topic.match(/^(.+)\/response\/(.+)$/)) === null)
             return
-        const [ , method, cid ] = m
+        const [ , method, clientId ] = m
 
         /*  ensure we really handle only MQTT RPC responses for us  */
-        if (cid !== this.cid)
+        if (clientId !== this.options.clientId)
             return
 
         /*  ensure we handle only JSON-RPC payloads  */
@@ -254,7 +252,7 @@ class API {
 
     /*  subscribe to RPC response  */
     private _responseSubscribe (method: string): void {
-        const topic: string = `${method}/response/${this.cid}`
+        const topic: string = `${method}/response/${this.options.clientId}`
         if (!this.subscriptions.has(topic)) {
             this.subscriptions.set(topic, 0)
             this.mqtt.subscribe(topic, { qos: 2 }, (err: Error | null) => {
@@ -267,7 +265,7 @@ class API {
 
     /*  unsubscribe from RPC response  */
     private _responseUnsubscribe (method: string): void {
-        const topic: string = `${method}/response/${this.cid}`
+        const topic: string = `${method}/response/${this.options.clientId}`
         if (!this.subscriptions.has(topic))
             return
         this.subscriptions.set(topic, this.subscriptions.get(topic)! - 1)
