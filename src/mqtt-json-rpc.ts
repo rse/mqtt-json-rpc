@@ -33,9 +33,9 @@ interface APIOptions {
     encoding?: "json" | "cbor" | "msgpack"
     timeout?:  number
 }
-type Registry      = Record<string, ((...params: any[]) => any) | undefined>
-type Requests      = Record<string, ((err: any, result: any) => void) | undefined>
-type Subscriptions = Record<string, number | undefined>
+type Registry      = Map<string, (...params: any[]) => any>
+type Requests      = Map<string, (err: any, result: any) => void>
+type Subscriptions = Map<string, number>
 
 /*  the API class  */
 class API {
@@ -65,9 +65,9 @@ class API {
         this.cid = (new UUID(1)).format("std")
 
         /*  internal states  */
-        this.registry      = {}
-        this.requests      = {}
-        this.subscriptions = {}
+        this.registry      = new Map()
+        this.requests      = new Map()
+        this.subscriptions = new Map()
 
         /*  hook into the MQTT message processing  */
         this.mqtt.on("message", (topic: string, message: Buffer) => {
@@ -82,14 +82,14 @@ class API {
 
     /*  check for the registration of an RPC method  */
     registered (method: string): boolean {
-        return (this.registry[method] !== undefined)
+        return this.registry.has(method)
     }
 
     /*  register an RPC method  */
     register (method: string, callback: (...params: any[]) => any): Promise<any> {
-        if (this.registry[method] !== undefined)
+        if (this.registry.has(method))
             throw new Error(`register: method "${method}" already registered`)
-        this.registry[method] = callback
+        this.registry.set(method, callback)
         return new Promise((resolve, reject) => {
             this.mqtt.subscribe(`${method}/request`, { qos: 2 }, (err: Error | null, granted: any) => {
                 if (err)
@@ -102,9 +102,9 @@ class API {
 
     /*  unregister an RPC method  */
     unregister (method: string): Promise<any> {
-        if (this.registry[method] === undefined)
+        if (!this.registry.has(method))
             throw new Error(`unregister: method "${method}" not registered`)
-        delete this.registry[method]
+        this.registry.delete(method)
         return new Promise((resolve, reject) => {
             this.mqtt.unsubscribe(`${method}/request`, (err?: Error, packet?: any) => {
                 if (err)
@@ -135,14 +135,14 @@ class API {
         /*  dispatch according to JSON-RPC type  */
         if (parsed.type === "notification") {
             /*  just deliver notification  */
-            if (typeof this.registry[method] === "function")
-                this.registry[method]!(...parsed.payload.params)
+            this.registry.get(method)?.(...parsed.payload.params)
         }
         else if (parsed.type === "request") {
             /*  deliver request and send response  */
             let response: Promise<any>
-            if (typeof this.registry[method] === "function")
-                response = Promise.resolve().then(() => this.registry[method]!(...parsed.payload.params))
+            const handler = this.registry.get(method)
+            if (handler !== undefined)
+                response = Promise.resolve().then(() => handler(...parsed.payload.params))
             else
                 response = Promise.reject(JsonRpcError.methodNotFound({ method, id: parsed.payload.id }))
             response.then((result: any) => {
@@ -151,14 +151,14 @@ class API {
             }, (error: any) => {
                 /*  create JSON-RPC error response  */
                 return this._buildError(parsed.payload, error)
-            }).then((response: any) => {
+            }).then((rpcResponse: any) => {
                 /*  send MQTT response message  */
-                const m = parsed.payload.id.match(/^(.+):.+$/)
-                if (m === null)
+                const idMatch = parsed.payload.id.match(/^(.+):.+$/)
+                if (idMatch === null)
                     throw new Error("invalid request id format")
-                response = this.encodr.encode(response)
-                const cid: string = m[1]
-                this.mqtt.publish(`${method}/response/${cid}`, response, { qos: 0 })
+                const encoded = this.encodr.encode(rpcResponse) as string | Buffer
+                const cid: string = idMatch[1]
+                this.mqtt.publish(`${method}/response/${cid}`, encoded, { qos: 0 })
             }).catch((err: Error) => {
                 this.mqtt.emit("error", err)
             })
@@ -186,30 +186,31 @@ class API {
         /*  create promise for response handling  */
         const promise: Promise<any> = new Promise((resolve, reject) => {
             let timer: NodeJS.Timeout | null = setTimeout(() => {
-                delete this.requests[rid]
+                this.requests.delete(rid)
                 this._responseUnsubscribe(method)
                 reject(new Error("communication timeout"))
                 timer = null
             }, this.options.timeout!)
-            this.requests[rid] = (err: any, result: any) => {
+            this.requests.set(rid, (err: any, result: any) => {
                 if (timer !== null) {
                     clearTimeout(timer)
                     timer = null
                 }
                 if (err) reject(err)
                 else     resolve(result)
-            }
+            })
         })
         let request: any = JSONRPC.request(rid, method, params)
 
         /*  send MQTT request message  */
         request = this.encodr.encode(request)
         this.mqtt.publish(`${method}/request`, request, { qos: 2 }, (err?: Error) => {
-            if (err && this.requests[rid] !== undefined) {
+            const callback = this.requests.get(rid)
+            if (err && callback !== undefined) {
                 /*  handle request failure  */
                 this._responseUnsubscribe(method)
-                this.requests[rid]!(err, undefined)
-                delete this.requests[rid]
+                callback(err, undefined)
+                this.requests.delete(rid)
             }
         })
 
@@ -236,15 +237,16 @@ class API {
         /*  dispatch according to JSON-RPC type  */
         if (parsed.type === "success" || parsed.type === "error") {
             const rid: string = parsed.payload.id
-            if (typeof this.requests[rid] === "function") {
+            const callback = this.requests.get(rid)
+            if (callback !== undefined) {
                 /*  call callback function  */
                 if (parsed.type === "success")
-                    this.requests[rid]!(undefined, parsed.payload.result)
+                    callback(undefined, parsed.payload.result)
                 else
-                    this.requests[rid]!(parsed.payload.error, undefined)
+                    callback(parsed.payload.error, undefined)
 
                 /*  unsubscribe from response  */
-                delete this.requests[rid]
+                this.requests.delete(rid)
                 this._responseUnsubscribe(method)
             }
         }
@@ -253,24 +255,24 @@ class API {
     /*  subscribe to RPC response  */
     private _responseSubscribe (method: string): void {
         const topic: string = `${method}/response/${this.cid}`
-        if (this.subscriptions[topic] === undefined) {
-            this.subscriptions[topic] = 0
+        if (!this.subscriptions.has(topic)) {
+            this.subscriptions.set(topic, 0)
             this.mqtt.subscribe(topic, { qos: 2 }, (err: Error | null) => {
                 if (err)
                     this.mqtt.emit("error", err)
             })
         }
-        this.subscriptions[topic]!++
+        this.subscriptions.set(topic, this.subscriptions.get(topic)! + 1)
     }
 
     /*  unsubscribe from RPC response  */
     private _responseUnsubscribe (method: string): void {
         const topic: string = `${method}/response/${this.cid}`
-        if (this.subscriptions[topic] === undefined)
+        if (!this.subscriptions.has(topic))
             return
-        this.subscriptions[topic]!--
-        if (this.subscriptions[topic] === 0) {
-            delete this.subscriptions[topic]
+        this.subscriptions.set(topic, this.subscriptions.get(topic)! - 1)
+        if (this.subscriptions.get(topic) === 0) {
+            this.subscriptions.delete(topic)
             this.mqtt.unsubscribe(topic, (err?: Error) => {
                 if (err)
                     this.mqtt.emit("error", err)
@@ -280,6 +282,7 @@ class API {
 
     /*  determine RPC error  */
     private _buildError (payload: any, error: any): any {
+        /*  determine error type and build appropriate JSON-RPC error  */
         let rpcError: JsonRpcError
         switch (typeof error) {
             case "undefined":
