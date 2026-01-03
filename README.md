@@ -83,13 +83,15 @@ The RPC API provides the following methods:
     Type: `(name: string, clientId?: string) => string`<br/>
     Default: `` (name, clientId) => clientId ? `${name}/response/${clientId}` : `${name}/request` ``
   - `topicEventMatch` (function): Custom topic matching for events.<br/>
-    Type: `(topic: string) => RegExpMatchArray | null`<br/>
-    Default: `` (topic) => topic.match(/^(.+?)\/event(?:\/(.+))?$/) ``<br/>
-    The match result should have the event name in group 1 and the optional client ID in group 2.
+    Type: `(topic: string) => TopicMatch | null`<br/>
+    The `TopicMatch` type is `{ name: string, clientId?: string }`.<br/>
+    Default: `` (topic) => { const m = topic.match(/^(.+?)\/event(?:\/(.+))?$/); return m ? { name: m[1], clientId: m[2] } : null } ``<br/>
+    The match result should have the event `name` and optionally the `clientId`.
   - `topicServiceMatch` (function): Custom topic matching for services.<br/>
-    Type: `(topic: string) => RegExpMatchArray | null`<br/>
-    Default: `` (topic) => topic.match(/^(.+?)\/(?:request|response\/(.+))$/) ``<br/>
-    The match result should have the service name in group 1 and the optional client ID in group 2.
+    Type: `(topic: string) => TopicMatch | null`<br/>
+    The `TopicMatch` type is `{ name: string, clientId?: string }`.<br/>
+    Default: `` (topic) => { const m = topic.match(/^(.+?)\/(?:request|response\/(.+))$/); return m ? { name: m[1], clientId: m[2] } : null } ``<br/>
+    The match result should have the service `name` and optionally the `clientId`.
 
 - `RPC#register<C>(service: string, callback: C, options?: IClientSubscribeOptions): Promise<Registration>`:<br/>
   Register a service. The `service` has to be a valid MQTT topic

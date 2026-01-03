@@ -38,8 +38,9 @@ export type TopicEventMake     = (name: string, clientId?: string) => string
 export type TopicServiceMake   = (name: string, clientId?: string) => string
 
 /*  MQTT topic matching  */
-export type TopicEventMatch    = (topic: string) => RegExpMatchArray | null
-export type TopicServiceMatch  = (topic: string) => RegExpMatchArray | null
+export type TopicMatch         = { name: string, clientId?: string }
+export type TopicEventMatch    = (topic: string) => TopicMatch | null
+export type TopicServiceMatch  = (topic: string) => TopicMatch | null
 
 /*  API option type  */
 export interface APIOptions {
@@ -111,10 +112,18 @@ export default class API {
             clientId:          (new UUID(1)).format("std"),
             codec:             "cbor",
             timeout:           10 * 1000,
-            topicEventMake:    (name, clientId) => clientId ? `${name}/event/${clientId}`    : `${name}/event`,
-            topicServiceMake:  (name, clientId) => clientId ? `${name}/response/${clientId}` : `${name}/request`,
-            topicEventMatch:   (topic) => topic.match(/^(.+?)\/event(?:\/(.+))?$/),
-            topicServiceMatch: (topic) => topic.match(/^(.+?)\/(?:request|response\/(.+))$/),
+            topicEventMake:    (name, clientId) =>
+                clientId ? `${name}/event/${clientId}` : `${name}/event`,
+            topicServiceMake:  (name, clientId) =>
+                clientId ? `${name}/response/${clientId}` : `${name}/request`,
+            topicEventMatch:   (topic) => {
+                const m = topic.match(/^(.+?)\/event(?:\/(.+))?$/)
+                return m ? { name: m[1], clientId: m[2] } : null
+            },
+            topicServiceMatch: (topic) => {
+                const m = topic.match(/^(.+?)\/(?:request|response\/(.+))$/)
+                return m ? { name: m[1], clientId: m[2] } : null
+            },
             ...options
         }
 
@@ -385,14 +394,14 @@ export default class API {
     /*  handle incoming MQTT message  */
     private _onMessage (topic: string, message: Buffer): void {
         /*  ensure we handle only MQTT JSON-RPC messages  */
-        let m1: RegExpMatchArray | null = null
-        let m2: RegExpMatchArray | null = null
+        let m1: TopicMatch | null = null
+        let m2: TopicMatch | null = null
         if (   (m1 = this.options.topicEventMatch(topic))   === null
             && (m2 = this.options.topicServiceMatch(topic)) === null)
             return
 
         /*  ensure we really handle only MQTT RPC responses for us  */
-        const clientId = (m1 !== null ? m1[2] : (m2 !== null ? m2[2] : undefined))
+        const clientId = (m1 !== null ? m1.clientId : (m2 !== null ? m2.clientId : undefined))
         if (clientId !== undefined && clientId !== this.options.clientId)
             return
 
