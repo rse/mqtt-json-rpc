@@ -68,8 +68,7 @@ mqtt.on("connect", () => {
 Application Programming Interface
 ---------------------------------
 
-The RPC API provides the following methods (check out the
-corresponding [TypeScript definition](dst/mqtt-json-rpc.d.ts) file for details):
+The RPC API provides the following methods:
 
 - `constructor(mqtt: MqttClient, options?: Partial<APIOptions>): RPC`:<br/>
   The `mqtt` is the [MQTT.js](https://www.npmjs.com/package/mqtt) instance.
