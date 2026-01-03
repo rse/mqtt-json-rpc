@@ -136,10 +136,11 @@ The RPC API provides the following methods:
 
 - **Event Subscription**:<br/>
 
-      subscribe<K extends EventKeys<T> & string>(
-          event: K,
-          callback: T[K],
-          options?: IClientSubscribeOptions
+      /*  (simplified API method signature)  */
+      subscribe(
+          event:    string,
+          callback: (...params: any[]) => void,
+          options?: MQTT::IClientSubscribeOptions
       ): Promise<Subscription>
 
   Subscribe to an event. The `event` has to be a valid MQTT topic
@@ -149,7 +150,14 @@ The RPC API provides the following methods:
   `${event}/event-notice/${clientId}`) are subscribed. Returns a `Subscription` object with an `unsubscribe()` method.
 
 - **Service Registration**:<br/>
-  `register<K extends ServiceKeys<T> & string>(service: K, callback: T[K], options?: IClientSubscribeOptions): Promise<Registration>`:<br/>
+
+      /*  (simplified API method signature)  */
+      register(
+          service: string,
+          callback: (...params: any[]) => any,
+          options?: MQTT::IClientSubscribeOptions
+      ): Promise<Registration>
+
   Register a service. The `service` has to be a valid MQTT topic
   name. The `callback` is called with the `params` passed to
   a remote `call()`. The return value of `callback`
@@ -158,10 +166,15 @@ The RPC API provides the following methods:
   `${service}/service-request/${clientId}`) are subscribed. Returns a `Registration` object with an `unregister()` method.
 
 - **Event Emission**:<br/>
-  `emit<K extends EventKeys<T> & string>(event: K, ...params: Parameters<T[K]>): void`<br/>
-  `emit<K extends EventKeys<T> & string>(event: K, clientId: ClientId, ...params: Parameters<T[K]>): void`<br/>
-  `emit<K extends EventKeys<T> & string>(event: K, options: IClientPublishOptions, ...params: Parameters<T[K]>): void`<br/>
-  `emit<K extends EventKeys<T> & string>(event: K, clientId: ClientId, options: IClientPublishOptions, ...params: Parameters<T[K]>): void`<br/>
+
+      /*  (simplified API method signature)  */
+      emit(
+          event:     string,
+          clientId?: ClientId,
+          options?:  MQTT::IClientSubscribeOptions,
+          ...params: any[]
+      ): void
+
   Emit an event to all subscribers or a specific client ("fire and forget").
   The optional `clientId` (wrapped via `clientId()`) directs the event to a specific client.
   The optional `options` allows setting MQTT publish options like `qos` or `retain`.
@@ -169,10 +182,15 @@ The RPC API provides the following methods:
   (default: `${event}/event-notice` or `${event}/event-notice/${clientId}`).
 
 - **Service Call**:<br/>
-  `call<K extends ServiceKeys<T> & string>(service: K, ...params: Parameters<T[K]>): Promise<Awaited<ReturnType<T[K]>>>`<br/>
-  `call<K extends ServiceKeys<T> & string>(service: K, clientId: ClientId, ...params: Parameters<T[K]>): Promise<Awaited<ReturnType<T[K]>>>`<br/>
-  `call<K extends ServiceKeys<T> & string>(service: K, options: IClientPublishOptions, ...params: Parameters<T[K]>): Promise<Awaited<ReturnType<T[K]>>>`<br/>
-  `call<K extends ServiceKeys<T> & string>(service: K, clientId: ClientId, options: IClientPublishOptions, ...params: Parameters<T[K]>): Promise<Awaited<ReturnType<T[K]>>>`<br/>
+
+      /*  (simplified API method signature)  */
+      call(
+          service:   string,
+          clientId?: ClientId,
+          options?:  MQTT::IClientSubscribeOptions,
+          ...params: any[]
+      ): Promise<any>
+
   Call a service. The remote `register()` `callback` is
   called with `params` and its return value resolves the returned
   `Promise`. If the remote `callback` throws an exception, this rejects
@@ -183,7 +201,11 @@ The RPC API provides the following methods:
   is temporarily subscribed for receiving the response.
 
 - **Client Id Wrapping**:<br/>
-  `clientId(id: string): ClientId`:<br/>
+
+      clientId(
+          id: string
+      ): ClientId
+
   Wrap a client ID string for use with `emit()` or `call()` to direct the
   message to a specific client. Returns a `ClientId` object.
 
