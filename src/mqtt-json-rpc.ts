@@ -400,7 +400,7 @@ export default class API<T extends APISchema = APISchema> {
         if (!this.subscriptions.has(topic))
             return
 
-        /*  unsubscribe from MQTT topic and unremember subscription  */
+        /*  unsubscribe from MQTT topic and forget subscription  */
         this.subscriptions.set(topic, this.subscriptions.get(topic)! - 1)
         if (this.subscriptions.get(topic) === 0) {
             this.subscriptions.delete(topic)
