@@ -33,14 +33,14 @@ Usage
 
 #### Server:
 
-```js
-const MQTT = require("mqtt")
-const RPC  = require("mqtt-json-rpc")
+```ts
+import MQTT from "mqtt"
+import RPC  from "mqtt-json-rpc"
 
 const mqtt = MQTT.connect("wss://127.0.0.1:8889", { ... })
 const rpc  = new RPC(mqtt)
 
-mqtt.on("connect", () => {
+mqtt.on("connect", async () => {
     rpc.register("example/hello", (a1, a2) => {
         console.log("example/hello: request: ", a1, a2)
         return `${a1}:${a2}`
@@ -50,9 +50,9 @@ mqtt.on("connect", () => {
 
 #### Client:
 
-```js
-const MQTT = require("mqtt")
-const RPC  = require("mqtt-json-rpc")
+```ts
+import MQTT from "mqtt"
+import RPC  from "mqtt-json-rpc"
 
 const mqtt = MQTT.connect("wss://127.0.0.1:8889", { ... })
 const rpc  = new RPC(mqtt)
@@ -68,60 +68,66 @@ mqtt.on("connect", () => {
 Application Programming Interface
 ---------------------------------
 
-The MQTT-JSON-RPC API provides the following methods (check out the
-corresponding [TypeScript definition](mqtt-json-rpc.d.ts)) file):
+The RPC API provides the following methods (check out the
+corresponding [TypeScript definition](dst/mqtt-json-rpc.d.ts) file for details):
 
-- `constructor(mqtt: MQTT, options?: { encoding?: string, timeout?: number }): MQTT-JSON-RPC`:<br/>
+- `constructor(mqtt: MqttClient, options?: Partial<APIOptions>): RPC`:<br/>
   The `mqtt` is the [MQTT.js](https://www.npmjs.com/package/mqtt) instance.
-  The optional `encoding` option can be either `json` (default), `msgpack` or `cbor`.
-  The optional `timeout` option is the timeout in seconds.
+  The optional `options` object supports the following fields:
+  - `clientId` (string): Custom client identifier (default: auto-generated UUID v1).
+  - `codec` (`"cbor"` | `"json"`): Encoding format (default: `"cbor"`).
+  - `timeout` (number): Timeout in milliseconds (default: `10000`).
+  - `topicEventMake` (function): Custom topic generation for events.
+  - `topicServiceMake` (function): Custom topic generation for services.
+  - `topicEventMatch` (function): Custom topic matching for events.
+  - `topicServiceMatch` (function): Custom topic matching for services.
 
-- `MQTT-JSON-RPC#registered(method: string): boolean`:<br/>
-  Check for the previous registration of a method. The `method` has to
-  be a valid MQTT topic name. The method returns `true` if `method` is
-  already registered, else it returns `false`.
-
-- `MQTT-JSON-RPC#register(method: string, callback: (...args: any[]) => any): Promise<boolean>`:<br/>
-  Register a method. The `method` has to be a valid MQTT topic
+- `RPC#register<C>(service: string, callback: C, options?: IClientSubscribeOptions): Promise<Registration>`:<br/>
+  Register a service. The `service` has to be a valid MQTT topic
   name. The `callback` is called with the `params` passed to
-  the remote `MQTT-JSON-RPC#notify()` or `MQTT-JSON-RPC#call()`. For
-  a remote `MQTT-JSON-RPC#notify()`, the return value of `callback` will be
-  ignored. For a remote `MQTT-JSON-RPC#call()`, the return value of `callback`
-  will resolve the promise returned by the remote `MQTT-JSON-RPC#call()`.
-  Internally, on the MQTT broker the topic `${method}/request` is
-  subscribed.
+  a remote `RPC#call()`. The return value of `callback`
+  will resolve the promise returned by the remote `RPC#call()`.
+  Internally, on the MQTT broker the topic `${service}/request` is
+  subscribed. Returns a `Registration` object with an `unregister()` method.
 
-- `MQTT-JSON-RPC#unregister(method: string): Promise<void>`:<br/>
-  Unregister a previously registered method.
-  Internally, on the MQTT broker the topic `${method}/request` is unsubscribed.
+- `RPC#subscribe<C>(event: string, callback: C, options?: IClientSubscribeOptions): Promise<Subscription>`:<br/>
+  Subscribe to an event. The `event` has to be a valid MQTT topic
+  name. The `callback` is called with the `params` passed to
+  a remote `RPC#notify()` or `RPC#control()`. The return value of `callback` is ignored.
+  Internally, on the MQTT broker the topic `${event}/event` is
+  subscribed. Returns a `Subscription` object with an `unsubscribe()` method.
 
-- `MQTT-JSON-RPC#notify(method: string, ...params: any[]): void`:<br/>
-  Notify a method. The remote `MQTT-JSON-RPC#register()` `callback` is called
-  with `params` and its return value is silently ignored.
+- `RPC#notify<P>(event: string, ...params: P): void`:<br/>
+  Notify all subscribers of an event ("fire and forget").
+  Internally, publishes to the MQTT topic `${event}/event`.
 
-- `MQTT-JSON-RPC#call(method: string, ...params: any[]): Promise<any>`:<br/>
-  Call a method. The remote `MQTT-JSON-RPC#register()` `callback` is
+- `RPC#control<P>(clientId: string, event: string, ...params: P): void`:<br/>
+  Send an event to a specific client ("fire and forget").
+  Internally, publishes to the MQTT topic `${event}/event/${clientId}`.
+
+- `RPC#call<C>(service: string, ...params: Parameters<C>): Promise<ReturnType<C>>`:<br/>
+  Call a service. The remote `RPC#register()` `callback` is
   called with `params` and its return value resolves the returned
   `Promise`. If the remote `callback` throws an exception, this rejects
   the returned `Promise`. Internally, on the MQTT broker the topic
-  `${method}/response/<cid>` is temporarily subscribed for receiving the
-  response (`<cid>` is a UUID v1 to uniquely identify the MQTT-JSON-RPC
-  caller instance).
+  `${service}/response/<cid>` is temporarily subscribed for receiving the
+  response (`<cid>` is a UUID v1 to uniquely identify the RPC
+  client instance).
 
 Internals
 ---------
 
-Internally, remote methods are assigned to MQTT topics. When calling a
-remote method named `example/hello` with parameters `"world"` and `42` via...
+Internally, remote services are assigned to MQTT topics. When calling a
+remote service named `example/hello` with parameters `"world"` and `42` via...
 
-```js
+```ts
 rpc.call("example/hello", "world", 42).then((result) => {
     ...
 })
 ```
 
 ...the following JSON-RPC 2.0 request message is sent to the permanent MQTT
-topic `example/hello/request`:
+topic `example/hello/request` (shown in JSON for readability, but encoded as CBOR by default):
 
 ```json
 {
@@ -132,9 +138,9 @@ topic `example/hello/request`:
 }
 ```
 
-Beforehand, this `example/hello` method should have been registered with...
+Beforehand, this `example/hello` service should have been registered with...
 
-```js
+```ts
 rpc.register("example/hello", (a1, a2) => {
     return `${a1}:${a2}`
 })
@@ -154,8 +160,8 @@ message to the temporary (client-specific) MQTT topic
 ```
 
 The JSON-RPC 2.0 `id` field always consists of `<cid>:<rid>`, where
-`<cid>` is the UUID v1 of the MQTT-JSON-RPC client instance and `<rid>` is
-the UUID v1 of the particular method request. The `<cid>` is used for
+`<cid>` is the UUID v1 of the RPC client instance and `<rid>` is
+the UUID v1 of the particular service request. The `<cid>` is used for
 sending back the JSON-RPC 2.0 response message to the requestor only.
 The `<rid>` is used for correlating the response to the request only.
 
@@ -199,12 +205,12 @@ topic   readwrite example/#
 example:$6$awYNe6oCAi+xlvo5$mWIUqyy4I0O3nJ99lP1mkRVqsDGymF8en5NChQQxf7KrVJLUp1SzrrVDe94wWWJa3JGIbOXD9wfFGZdi948e6A==
 ```
 
-Then test-drive MQTT-JSON-RPC with a complete [sample](sample/sample.js) to see
+Then test-drive MQTT-JSON-RPC with a complete [sample](sample/sample.ts) to see
 MQTT-JSON-RPC in action and tracing its communication:
 
-```js
-const MQTT = require("mqtt")
-const RPC  = require("mqtt-json-rpc")
+```ts
+import MQTT from "mqtt"
+import RPC  from "mqtt-json-rpc"
 
 const mqtt = MQTT.connect("wss://127.0.0.1:8889", {
     rejectUnauthorized: false,
@@ -212,7 +218,9 @@ const mqtt = MQTT.connect("wss://127.0.0.1:8889", {
     password: "example"
 })
 
-const rpc = new RPC(mqtt)
+const rpc = new RPC(mqtt, { codec: "json" })
+
+type Sample = (a: string, b: number) => string
 
 mqtt.on("error",     (err)            => { console.log("ERROR", err) })
 mqtt.on("offline",   ()               => { console.log("OFFLINE") })
@@ -222,11 +230,11 @@ mqtt.on("message",   (topic, message) => { console.log("RECEIVED", topic, messag
 
 mqtt.on("connect", () => {
     console.log("CONNECT")
-    rpc.register("example/hello", (a1, a2) => {
+    rpc.register<Sample>("example/hello", (a1, a2) => {
         console.log("example/hello: request: ", a1, a2)
         return `${a1}:${a2}`
     })
-    rpc.call("example/hello", "world", 42).then((result) => {
+    rpc.call<Sample>("example/hello", "world", 42).then((result) => {
         console.log("example/hello sucess: ", result)
         mqtt.end()
     }).catch((err) => {
@@ -235,10 +243,10 @@ mqtt.on("connect", () => {
 })
 ```
 
-The output will be:
+The output will be (when using codec `json`):
 
 ```
-$ node sample.js
+$ node sample.ts
 CONNECT
 RECEIVED example/hello/request {"jsonrpc":"2.0","id":"1099cb50-bd2b-11eb-8198-43568ad728c4:10bf7bc0-bd2b-11eb-bac6-439c565b651a","method":"example/hello","params":["world",42]}
 example/hello: request:  world 42
