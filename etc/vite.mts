@@ -26,13 +26,16 @@ export default Vite.defineConfig(({ command, mode }) => ({
         viteSingleFile()
     ],
     build: {
+        rollupOptions: {
+            external: formats === "umd" ? [] : [ "stream" ]
+        },
         lib: {
             entry:    "dst/mqtt-json-rpc.js",
             formats:  formats.split(","),
             name:     "MqttJsonRpc",
             fileName: (format) => `mqtt-json-rpc.${format === "es" ? "esm" : format}.js`
         },
-        target:                 "es2022",
+        target:                 formats === "umd" ? "es2022" : "node20",
         outDir:                 "dst",
         assetsDir:              "",
         emptyOutDir:            (mode === "production") && formats !== "umd",

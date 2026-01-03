@@ -31,6 +31,7 @@
         "globals":                    "17.0.0",
         "@eslint/js":                 "9.39.2",
         "@eslint/eslintrc":           "3.3.3",
+        "jiti":                       "2.6.1",
         "typescript":                 "5.9.3",
         "typescript-eslint":          "8.51.0",
         "@typescript-eslint/parser":  "8.51.0",
@@ -45,8 +46,8 @@
     },
     "dependencies": {
         "pure-uuid":                  "2.0.0",
-        "encodr":                     "1.4.1",
-        "jsonrpc-lite":               "2.2.0"
+        "jsonrpc-lite":               "2.2.0",
+        "cbor":                       "10.0.11"
     },
     "engines": {
         "node":                       ">=16.0.0"

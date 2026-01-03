@@ -8,13 +8,13 @@ const mqtt = MQTT.connect("wss://10.1.0.10:8889", {
     password: "example"
 })
 
-const rpc = new RPC(mqtt)
+const rpc = new RPC(mqtt, { codec: "cbor" })
 
 mqtt.on("error",     (err)            => { console.log("ERROR", err) })
 mqtt.on("offline",   ()               => { console.log("OFFLINE") })
 mqtt.on("close",     ()               => { console.log("CLOSE") })
 mqtt.on("reconnect", ()               => { console.log("RECONNECT") })
-mqtt.on("message",   (topic, message) => { console.log("RECEIVED", topic, message.toString()) })
+mqtt.on("message",   (topic, message) => { console.log("RECEIVED", topic, message) })
 
 type Sample = (a: string, b: number) => string
 
