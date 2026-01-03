@@ -235,7 +235,8 @@ example:$6$awYNe6oCAi+xlvo5$mWIUqyy4I0O3nJ99lP1mkRVqsDGymF8en5NChQQxf7KrVJLUp1Sz
 ```
 
 Then test-drive MQTT-JSON-RPC with a complete [sample](sample/sample.ts) to see
-MQTT-JSON-RPC in action and tracing its communication:
+MQTT-JSON-RPC in action and tracing its communication (the typing of the `RPC`
+class with `RPCSchema` is optional, but strongly suggested):
 
 ```ts
 import MQTT from "mqtt"
@@ -247,7 +248,12 @@ const mqtt = MQTT.connect("wss://127.0.0.1:8889", {
     password: "example"
 })
 
-const rpc = new RPC(mqtt, { codec: "json" })
+type RPCSchema = {
+    "example/sample": (a1: string, a2: number) => void
+    "example/hello":  (a1: string, a2: number) => string
+}
+
+const rpc = new RPC<RPCSchema>(mqtt, { codec: "json" })
 
 type Sample = (a: string, b: number) => string
 

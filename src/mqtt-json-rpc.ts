@@ -61,6 +61,25 @@ export interface Subscription {
     unsubscribe (): Promise<void>
 }
 
+/*  Type utilities for generic API  */
+export type APISchema = Record<string, (...args: any[]) => any>
+
+/*  Extract keys where return type is NOT void (services: register/call)  */
+export type ServiceKeys<T> = string extends keyof T ? string : {
+    [ K in keyof T ]: T[K] extends (...args: any[]) => infer R
+    /*  eslint-disable-next-line @typescript-eslint/no-invalid-void-type  */
+    ? [ R ] extends [ void ] ? never : K
+    : never
+}[ keyof T ]
+
+/*  Extract keys where return type IS void (events: subscribe/notify/control)  */
+export type EventKeys<T> = string extends keyof T ? string : {
+    [ K in keyof T ]: T[K] extends (...args: any[]) => infer R
+    /*  eslint-disable-next-line @typescript-eslint/no-invalid-void-type  */
+    ? [ R ] extends [ void ] ? K : never
+    : never
+}[ keyof T ]
+
 /*  the encoder/decoder abstraction  */
 class Codec {
     constructor (private type: "cbor" | "json") {}
@@ -95,7 +114,7 @@ class Codec {
 }
 
 /*  the API class  */
-export default class API {
+export default class API<T extends APISchema = APISchema> {
     private options:      APIOptions
     private codec:        Codec
     private registry      = new Map<string, ((...params: any[]) => any) | ((...params: any[]) => void)>()
@@ -137,10 +156,10 @@ export default class API {
     }
 
     /*  subscribe to an RPC event  */
-    subscribe<C extends ((...params: any[]) => void)> (
-        event:    string,
-        callback: C,
-        options:  Partial<IClientSubscribeOptions>
+    subscribe<K extends EventKeys<T> & string> (
+        event:    K,
+        callback: T[K],
+        options:  Partial<IClientSubscribeOptions> = {}
     ): Promise<Subscription> {
         if (this.registry.has(event))
             throw new Error(`subscribe: event "${event}" already subscribed`)
@@ -174,10 +193,10 @@ export default class API {
     }
 
     /*  register an RPC service  */
-    register<C extends ((...params: any[]) => any)> (
-        service:  string,
-        callback: C,
-        options?: Partial<IClientSubscribeOptions>
+    register<K extends ServiceKeys<T> & string> (
+        service:  K,
+        callback: T[K],
+        options:  Partial<IClientSubscribeOptions> = {}
     ): Promise<Registration> {
         if (this.registry.has(service))
             throw new Error(`register: service "${service}" already registered`)
@@ -220,25 +239,25 @@ export default class API {
     }
 
     /*  notify (one or more) peers with event ("fire and forget")  */
-    notify<P extends any[]> (
-        event:      string,
-        ...params:  P
+    notify<K extends EventKeys<T> & string> (
+        event:      K,
+        ...params:  Parameters<T[K]>
     ): void
-    notify<P extends any[]> (
-        event:      string,
+    notify<K extends EventKeys<T> & string> (
+        event:      K,
         options:    IClientPublishOptions,
-        ...params:  P
+        ...params:  Parameters<T[K]>
     ): void
-    notify<P extends any[]> (
-        event:      string,
+    notify<K extends EventKeys<T> & string> (
+        event:      K,
         ...args:    any[]
     ): void {
         /*  determine options and parameters  */
         let options: IClientPublishOptions = {}
-        let params = args as P
+        let params = args as Parameters<T[K]>
         if (args.length > 0 && this._isIClientPublishOptions(args[0])) {
             options = args[0]
-            params  = args.slice(1) as P
+            params  = args.slice(1) as Parameters<T[K]>
         }
 
         /*  generate corresponding MQTT topic  */
@@ -253,28 +272,28 @@ export default class API {
     }
 
     /*  control (one) peer with event ("fire and forget")  */
-    control<P extends any[]> (
+    control<K extends EventKeys<T> & string> (
         clientId:  string,
-        event:     string,
-        ...params: P
+        event:     K,
+        ...params: Parameters<T[K]>
     ): void
-    control<P extends any[]> (
+    control<K extends EventKeys<T> & string> (
         clientId:  string,
-        event:     string,
+        event:     K,
         options:   IClientPublishOptions,
-        ...params: P
+        ...params: Parameters<T[K]>
     ): void
-    control<P extends any[]> (
+    control<K extends EventKeys<T> & string> (
         clientId:  string,
-        event:     string,
+        event:     K,
         ...args:   any[]
     ): void {
         /*  determine options and parameters  */
         let options: IClientPublishOptions = {}
-        let params = args as P
+        let params = args as Parameters<T[K]>
         if (args.length > 0 && this._isIClientPublishOptions(args[0])) {
             options = args[0]
-            params  = args.slice(1) as P
+            params  = args.slice(1) as Parameters<T[K]>
         }
 
         /*  generate corresponding MQTT topic  */
@@ -289,25 +308,25 @@ export default class API {
     }
 
     /*  call peer service ("request and response")  */
-    call<C extends ((...params: any[]) => any)> (
-        service:   string,
-        ...params: Parameters<C>
-    ): Promise<ReturnType<C>>
-    call<C extends ((...params: any[]) => any)> (
-        service:   string,
+    call<K extends ServiceKeys<T> & string> (
+        service:   K,
+        ...params: Parameters<T[K]>
+    ): Promise<Awaited<ReturnType<T[K]>>>
+    call<K extends ServiceKeys<T> & string> (
+        service:   K,
         options:   IClientPublishOptions,
-        ...params: Parameters<C>
-    ): Promise<ReturnType<C>>
-    call<C extends ((...params: any[]) => any)> (
-        service:   string,
+        ...params: Parameters<T[K]>
+    ): Promise<Awaited<ReturnType<T[K]>>>
+    call<K extends ServiceKeys<T> & string> (
+        service:   K,
         ...args:   any[]
-    ): Promise<ReturnType<C>> {
+    ): Promise<Awaited<ReturnType<T[K]>>> {
         /*  determine options and parameters  */
         let options: IClientPublishOptions = {}
-        let params = args as Parameters<C>
+        let params = args as Parameters<T[K]>
         if (args.length > 0 && this._isIClientPublishOptions(args[0])) {
             options = args[0]
-            params  = args.slice(1) as Parameters<C>
+            params  = args.slice(1) as Parameters<T[K]>
         }
 
         /*  determine unique request id
@@ -318,7 +337,7 @@ export default class API {
         this._responseSubscribe(service, { qos: options.qos ?? 2 })
 
         /*  create promise for MQTT response handling  */
-        const promise: Promise<ReturnType<C>> = new Promise((resolve, reject) => {
+        const promise: Promise<Awaited<ReturnType<T[K]>>> = new Promise((resolve, reject) => {
             let timer: NodeJS.Timeout | null = setTimeout(() => {
                 this.requests.delete(rid)
                 this._responseUnsubscribe(service)
@@ -327,7 +346,7 @@ export default class API {
             }, this.options.timeout!)
             this.requests.set(rid, {
                 service,
-                callback: (err: any, result: ReturnType<C>) => {
+                callback: (err: any, result: Awaited<ReturnType<T[K]>>) => {
                     if (timer !== null) {
                         clearTimeout(timer)
                         timer = null
