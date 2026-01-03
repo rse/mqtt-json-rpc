@@ -196,9 +196,25 @@ export default class API<T extends APISchema = APISchema> {
     /*  subscribe to an RPC event  */
     async subscribe<K extends EventKeys<T> & string> (
         event:    K,
-        callback: T[K],
-        options:  Partial<IClientSubscribeOptions> = {}
+        callback: T[K]
+    ): Promise<Subscription>
+    async subscribe<K extends EventKeys<T> & string> (
+        event:    K,
+        options:  Partial<IClientSubscribeOptions>,
+        callback: T[K]
+    ): Promise<Subscription>
+    async subscribe<K extends EventKeys<T> & string> (
+        event:    K,
+        ...args:  any[]
     ): Promise<Subscription> {
+        /*  determine parameters  */
+        let options:  Partial<IClientSubscribeOptions> = {}
+        let callback: T[K] = args[0] as T[K]
+        if (args.length === 2 && typeof args[0] === "object") {
+            options  = args[0]
+            callback = args[1]
+        }
+
         /*  sanity check situation  */
         if (this.registry.has(event))
             throw new Error(`subscribe: event "${event}" already subscribed`)
@@ -239,9 +255,25 @@ export default class API<T extends APISchema = APISchema> {
     /*  register an RPC service  */
     async register<K extends ServiceKeys<T> & string> (
         service:  K,
-        callback: T[K],
-        options:  Partial<IClientSubscribeOptions> = {}
+        callback: T[K]
+    ): Promise<Registration>
+    async register<K extends ServiceKeys<T> & string> (
+        service:  K,
+        options:  Partial<IClientSubscribeOptions>,
+        callback: T[K]
+    ): Promise<Registration>
+    async register<K extends ServiceKeys<T> & string> (
+        service:  K,
+        ...args:  any[]
     ): Promise<Registration> {
+        /*  determine parameters  */
+        let options:  Partial<IClientSubscribeOptions> = {}
+        let callback: T[K] = args[0] as T[K]
+        if (args.length === 2 && typeof args[0] === "object") {
+            options  = args[0]
+            callback = args[1]
+        }
+
         /*  sanity check situation  */
         if (this.registry.has(service))
             throw new Error(`register: service "${service}" already registered`)
