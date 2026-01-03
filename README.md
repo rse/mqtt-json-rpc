@@ -135,6 +135,16 @@ The RPC API provides the following methods:
 Internals
 ---------
 
+In the followinng, assume that an RPC instance is created with:
+
+```ts
+import MQTT from "mqtt"
+import RPC  from "mqtt-json-rpc"
+
+const mqtt = MQTT.connect("...", { ... })
+const rpc  = new RPC(mqtt, { clientId: "d1acc980-0e4e-11e8-98f0-ab5030b47df4", codec: "json" })
+```
+
 Internally, remote services are assigned to MQTT topics. When calling a
 remote service named `example/hello` with parameters `"world"` and `42` via...
 
@@ -145,7 +155,8 @@ rpc.call("example/hello", "world", 42).then((result) => {
 ```
 
 ...the following JSON-RPC 2.0 request message is sent to the permanent MQTT
-topic `example/hello/request` (shown in JSON for readability, but encoded as CBOR by default):
+topic `example/hello/request` (UUID `d1db7aa0-0e4e-11e8-b1d9-5f0ab230c0d9` is
+a random generated one):
 
 ```json
 {
@@ -164,7 +175,7 @@ rpc.register("example/hello", (a1, a2) => {
 })
 ```
 
-...and then its result, in the above `rpc.call` example `"world:42"`, is then
+...and then its result, in the above `rpc.call()` example `"world:42"`, is then
 sent back as the following JSON-RPC 2.0 success response
 message to the temporary (client-specific) MQTT topic
 `example/hello/response/d1acc980-0e4e-11e8-98f0-ab5030b47df4`:
@@ -177,11 +188,11 @@ message to the temporary (client-specific) MQTT topic
 }
 ```
 
-The JSON-RPC 2.0 `id` field always consists of `<cid>:<rid>`, where
-`<cid>` is the UUID v1 of the RPC client instance and `<rid>` is
-the UUID v1 of the particular service request. The `<cid>` is used for
+The JSON-RPC 2.0 `id` field always consists of `clientId:requestId`, where
+`clientId` is the UUID v1 of the RPC client instance and `requestId` is
+the UUID v1 of the particular service request. The `clientId` is used for
 sending back the JSON-RPC 2.0 response message to the requestor only.
-The `<rid>` is used for correlating the response to the request only.
+The `requestId` is used for correlating the response to the request only.
 
 Example
 -------
@@ -248,11 +259,11 @@ mqtt.on("message",   (topic, message) => { console.log("RECEIVED", topic, messag
 
 mqtt.on("connect", () => {
     console.log("CONNECT")
-    rpc.register<Sample>("example/hello", (a1, a2) => {
+    rpc.register("example/hello", (a1, a2) => {
         console.log("example/hello: request: ", a1, a2)
         return `${a1}:${a2}`
     })
-    rpc.call<Sample>("example/hello", "world", 42).then((result) => {
+    rpc.call("example/hello", "world", 42).then((result) => {
         console.log("example/hello sucess: ", result)
         mqtt.end()
     }).catch((err) => {
@@ -261,14 +272,14 @@ mqtt.on("connect", () => {
 })
 ```
 
-The output will be (when using codec `json`):
+The output will be:
 
 ```
 $ node sample.ts
 CONNECT
-RECEIVED example/hello/request {"jsonrpc":"2.0","id":"1099cb50-bd2b-11eb-8198-43568ad728c4:10bf7bc0-bd2b-11eb-bac6-439c565b651a","method":"example/hello","params":["world",42]}
+RECEIVED example/hello/request {"jsonrpc":"2.0","id":"b441fe30-e8af-11f0-b361-a30e779baa27:b474f510-e8af-11f0-ace2-97e30fcf7dca","method":"example/hello","params":["world",42]}
 example/hello: request:  world 42
-RECEIVED example/hello/response/1099cb50-bd2b-11eb-8198-43568ad728c4 {"jsonrpc":"2.0","id":"1099cb50-bd2b-11eb-8198-43568ad728c4:10bf7bc0-bd2b-11eb-bac6-439c565b651a","result":"world:42"}
+RECEIVED example/hello/response/b441fe30-e8af-11f0-b361-a30e779baa27 {"jsonrpc":"2.0","id":"b441fe30-e8af-11f0-b361-a30e779baa27:b474f510-e8af-11f0-ace2-97e30fcf7dca","result":"world:42"}
 example/hello sucess:  world:42
 CLOSE
 ```
