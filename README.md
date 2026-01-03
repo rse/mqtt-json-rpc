@@ -135,7 +135,13 @@ The RPC API provides the following methods:
     The match result should have the service `name` and the `clientId`.
 
 - **Event Subscription**:<br/>
-  `subscribe<K extends EventKeys<T> & string>(event: K, callback: T[K], options?: IClientSubscribeOptions): Promise<Subscription>`:<br/>
+
+      subscribe<K extends EventKeys<T> & string>(
+          event: K,
+          callback: T[K],
+          options?: IClientSubscribeOptions
+      ): Promise<Subscription>
+
   Subscribe to an event. The `event` has to be a valid MQTT topic
   name. The `callback` is called with the `params` passed to
   a remote `emit()`. There is no return value of `callback`.
