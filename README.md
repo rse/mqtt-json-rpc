@@ -123,17 +123,14 @@ The RPC API provides the following methods:
     Default: `` (name, clientId) => clientId ? `${name}/service-response/${clientId}` : `${name}/service-response` ``
   - `topicEventNoticeMatch` (function): Custom topic matching for event notices.<br/>
     Type: `(topic: string) => TopicMatch | null`<br/>
-    The `TopicMatch` type is `{ name: string, clientId?: string }`.<br/>
     Default: `` (topic) => { const m = topic.match(/^(.+?)\/event-notice(?:\/(.+))?$/); return m ? { name: m[1], clientId: m[2] } : null } ``<br/>
     The match result should have the event `name` and optionally the `clientId`.
   - `topicServiceRequestMatch` (function): Custom topic matching for service requests.<br/>
     Type: `(topic: string) => TopicMatch | null`<br/>
-    The `TopicMatch` type is `{ name: string, clientId?: string }`.<br/>
     Default: `` (topic) => { const m = topic.match(/^(.+?)\/service-request(?:\/(.+))?$/); return m ? { name: m[1], clientId: m[2] } : null } ``<br/>
     The match result should have the service `name` and optionally the `clientId`.
   - `topicServiceResponseMatch` (function): Custom topic matching for service responses.<br/>
     Type: `(topic: string) => TopicMatch | null`<br/>
-    The `TopicMatch` type is `{ name: string, clientId?: string }`.<br/>
     Default: `` (topic) => { const m = topic.match(/^(.+?)\/service-response\/(.+)$/); return m ? { name: m[1], clientId: m[2] } : null } ``<br/>
     The match result should have the service `name` and the `clientId`.
 
