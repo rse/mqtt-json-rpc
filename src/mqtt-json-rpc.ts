@@ -61,10 +61,10 @@ export interface Subscription {
     unsubscribe (): Promise<void>
 }
 
-/*  Type utilities for generic API  */
+/*  type utilities for generic API  */
 export type APISchema = Record<string, (...args: any[]) => any>
 
-/*  Extract keys where return type is NOT void (services: register/call)  */
+/*  extract keys where return type is NOT void (services: register/call)  */
 export type ServiceKeys<T> = string extends keyof T ? string : {
     [ K in keyof T ]: T[K] extends (...args: any[]) => infer R
     /*  eslint-disable-next-line @typescript-eslint/no-invalid-void-type  */
@@ -72,7 +72,7 @@ export type ServiceKeys<T> = string extends keyof T ? string : {
     : never
 }[ keyof T ]
 
-/*  Extract keys where return type IS void (events: subscribe/notify/control)  */
+/*  extract keys where return type IS void (events: subscribe/notify/control)  */
 export type EventKeys<T> = string extends keyof T ? string : {
     [ K in keyof T ]: T[K] extends (...args: any[]) => infer R
     /*  eslint-disable-next-line @typescript-eslint/no-invalid-void-type  */
