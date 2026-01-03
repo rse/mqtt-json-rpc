@@ -55,14 +55,24 @@ Service Call functionality is the core and heart of this addon API.
 Usage
 -----
 
-#### Server:
+### API:
 
 ```ts
-import MQTT from "mqtt"
-import RPC  from "mqtt-json-rpc"
+export default type API = {
+    "example/sample": (a1: string, a2: number) => void
+    "example/hello":  (a1: string, a2: number) => string
+}
+```
+
+### Server:
+
+```ts
+import MQTT  from "mqtt"
+import RPC   from "mqtt-json-rpc"
+import API   from "..."
 
 const mqtt = MQTT.connect("wss://127.0.0.1:8889", { ... })
-const rpc  = new RPC(mqtt)
+const rpc  = new RPC<API>(mqtt)
 
 mqtt.on("connect", async () => {
     rpc.register("example/hello", (a1, a2) => {
@@ -72,14 +82,15 @@ mqtt.on("connect", async () => {
 })
 ```
 
-#### Client:
+### Client:
 
 ```ts
 import MQTT from "mqtt"
 import RPC  from "mqtt-json-rpc"
+import API   from "..."
 
 const mqtt = MQTT.connect("wss://127.0.0.1:8889", { ... })
-const rpc  = new RPC(mqtt)
+const rpc  = new RPC<API>(mqtt)
 
 mqtt.on("connect", () => {
     rpc.call("example/hello", "world", 42).then((response) => {
@@ -94,7 +105,7 @@ Application Programming Interface
 
 The RPC API provides the following methods:
 
-- **API Construction**:<br/>
+- **Construction**:<br/>
   `constructor(mqtt: MqttClient, options?: Partial<APIOptions>): RPC`:<br/>
   The `mqtt` is the [MQTT.js](https://www.npmjs.com/package/mqtt) instance.
   The optional `options` object supports the following fields:
@@ -143,11 +154,6 @@ The RPC API provides the following methods:
   Internally, on the MQTT broker, the topics by `topicServiceRequestMake()` (default: `${service}/service-request` and
   `${service}/service-request/${clientId}`) are subscribed. Returns a `Registration` object with an `unregister()` method.
 
-- **Client ID Wrapper**:<br/>
-  `clientId(id: string): ClientId`:<br/>
-  Wrap a client ID string for use with `emit()` or `call()` to direct the
-  message to a specific client. Returns a `ClientId` object.
-
 - **Event Emission**:<br/>
   `emit<K extends EventKeys<T> & string>(event: K, ...params: Parameters<T[K]>): void`<br/>
   `emit<K extends EventKeys<T> & string>(event: K, clientId: ClientId, ...params: Parameters<T[K]>): void`<br/>
@@ -172,6 +178,11 @@ The RPC API provides the following methods:
   Internally, on the MQTT broker, the topic
   by `topicServiceResponseMake(service, clientId)` (default: `${service}/service-response/${clientId}`)
   is temporarily subscribed for receiving the response.
+
+- **Client Id Wrapping**:<br/>
+  `clientId(id: string): ClientId`:<br/>
+  Wrap a client ID string for use with `emit()` or `call()` to direct the
+  message to a specific client. Returns a `ClientId` object.
 
 Internals
 ---------
