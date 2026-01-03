@@ -230,12 +230,13 @@ export default class API<T extends APISchema = APISchema> {
     }
 
     /*  check whether argument has structure of interface IClientPublishOptions  */
-    _isIClientPublishOptions (args: any) {
-        if (typeof args[0] !== "object")
+    private _isIClientPublishOptions (arg: any) {
+        if (typeof arg !== "object")
             return false
         const keys = [ "qos", "retain", "dup", "properties", "cbStorePut" ]
-        if (!Object.keys(args).every((key) => keys.includes(key)))
+        if (!Object.keys(arg).every((key) => keys.includes(key)))
             return false
+        return true
     }
 
     /*  notify (one or more) peers with event ("fire and forget")  */
