@@ -106,33 +106,40 @@ Application Programming Interface
 The RPC API provides the following methods:
 
 - **Construction**:<br/>
-  `constructor(mqtt: MqttClient, options?: Partial<APIOptions>): RPC`:<br/>
-  The `mqtt` is the [MQTT.js](https://www.npmjs.com/package/mqtt) instance.
+
+      constructor(
+          mqtt: MqttClient,
+          options?: {
+              clientId:                  string
+              codec:                     "cbor" | "json"
+              timeout:                   number
+              topicEventNoticeMake:      (topic: string) => TopicMatching | null
+              topicServiceRequestMake:   (topic: string) => TopicMatching | null
+              topicServiceResponseMake:  (topic: string) => TopicMatching | null
+              topicEventNoticeMatch:     { name: string, clientId?: string }
+              topicServiceRequestMatch:  { name: string, clientId?: string }
+              topicServiceResponseMatch: { name: string, clientId?: string }
+          }
+      )
+
+  The `mqtt` is the [MQTT.js](https://www.npmjs.com/package/mqtt) instance,
+  which has to be establish separately.
   The optional `options` object supports the following fields:
-  - `clientId` (string): Custom client identifier (default: auto-generated UUID v1).
-  - `codec` (`"cbor"` | `"json"`): Encoding format (default: `"cbor"`).
-  - `timeout` (number): Timeout in milliseconds (default: `10000`).
-  - `topicEventNoticeMake` (function): Custom topic generation for event notices.<br/>
-    Type: `(name: string, clientId?: string) => string`<br/>
-    Default: `` (name, clientId) => clientId ? `${name}/event-notice/${clientId}` : `${name}/event-notice` ``
-  - `topicServiceRequestMake` (function): Custom topic generation for service requests.<br/>
-    Type: `(name: string, clientId?: string) => string`<br/>
-    Default: `` (name, clientId) => clientId ? `${name}/service-request/${clientId}` : `${name}/service-request` ``
-  - `topicServiceResponseMake` (function): Custom topic generation for service responses.<br/>
-    Type: `(name: string, clientId?: string) => string`<br/>
-    Default: `` (name, clientId) => clientId ? `${name}/service-response/${clientId}` : `${name}/service-response` ``
-  - `topicEventNoticeMatch` (function): Custom topic matching for event notices.<br/>
-    Type: `(topic: string) => TopicMatch | null`<br/>
-    Default: `` (topic) => { const m = topic.match(/^(.+?)\/event-notice(?:\/(.+))?$/); return m ? { name: m[1], clientId: m[2] } : null } ``<br/>
-    The match result should have the event `name` and optionally the `clientId`.
-  - `topicServiceRequestMatch` (function): Custom topic matching for service requests.<br/>
-    Type: `(topic: string) => TopicMatch | null`<br/>
-    Default: `` (topic) => { const m = topic.match(/^(.+?)\/service-request(?:\/(.+))?$/); return m ? { name: m[1], clientId: m[2] } : null } ``<br/>
-    The match result should have the service `name` and optionally the `clientId`.
-  - `topicServiceResponseMatch` (function): Custom topic matching for service responses.<br/>
-    Type: `(topic: string) => TopicMatch | null`<br/>
-    Default: `` (topic) => { const m = topic.match(/^(.+?)\/service-response\/(.+)$/); return m ? { name: m[1], clientId: m[2] } : null } ``<br/>
-    The match result should have the service `name` and the `clientId`.
+  - `clientId`: Custom client identifier (default: auto-generated UUID v1).
+  - `codec`: Encoding format (default: `cbor`).
+  - `timeout`: Communication timeout in milliseconds (default: `10000`).
+  - `topicEventNoticeMake`: Custom topic generation for event notices.
+    (default: `` (name, clientId) => clientId ? `${name}/event-notice/${clientId}` : `${name}/event-notice` ``)
+  - `topicServiceRequestMake`: Custom topic generation for service requests.
+    (default: `` (name, clientId) => clientId ? `${name}/service-request/${clientId}` : `${name}/service-request` ``)
+  - `topicServiceResponseMake`): Custom topic generation for service responses.
+    (default: `` (name, clientId) => clientId ? `${name}/service-response/${clientId}` : `${name}/service-response` ``)
+  - `topicEventNoticeMatch`: Custom topic matching for event notices.
+    (default: `` (topic) => { const m = topic.match(/^(.+?)\/event-notice(?:\/(.+))?$/); return m ? { name: m[1], clientId: m[2] } : null } ``)
+  - `topicServiceRequestMatch`: Custom topic matching for service requests.
+    (default: `` (topic) => { const m = topic.match(/^(.+?)\/service-request(?:\/(.+))?$/); return m ? { name: m[1], clientId: m[2] } : null } ``)
+  - `topicServiceResponseMatch`: Custom topic matching for service responses.
+    (default: `` (topic) => { const m = topic.match(/^(.+?)\/service-response\/(.+)$/); return m ? { name: m[1], clientId: m[2] } : null } ``)
 
 - **Event Subscription**:<br/>
 
