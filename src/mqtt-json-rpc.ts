@@ -333,7 +333,6 @@ export default class API {
         /*  send MQTT request message  */
         const topic = this.options.topicServiceMake(service)
         const message = this.codec.encode(request)
-        console.log("FUCK1", request, message)
         this.mqtt.publish(topic, message, { qos: 2, ...options }, (err?: Error) => {
             /*  handle request failure  */
             const request = this.requests.get(rid)
