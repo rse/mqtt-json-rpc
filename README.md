@@ -48,6 +48,10 @@ Conceptually, this RPC API provides two types of communication patterns:
   receives the arguments as the request. The registrator then has to
   provide the service response.
 
+Notice: while the provided Event Emission functionality is just a very thing
+wrapper around the regular MQTT message publishing API of MQTT.js, the
+Service Call functionality is the core and heart of this addon API.
+
 Usage
 -----
 
