@@ -20,13 +20,31 @@ $ npm install mqtt mqtt-json-rpc
 About
 -----
 
-This is an addon API for the
-[MQTT.js](https://www.npmjs.com/package/mqtt) API of
-[Node.js](https://nodejs.org/), for
-[Remote Procedure Call](https://en.wikipedia.org/wiki/Remote_procedure_call) (RPC)
+This is an addon API for the excellent
+[MQTT.js](https://www.npmjs.com/package/mqtt) JavaScript/TypeScript API
+for [Remote Procedure Call](https://en.wikipedia.org/wiki/Remote_procedure_call) (RPC)
 communication based on the [JSON-RPC](http://www.jsonrpc.org/)
 protocol. This allows a bi-directional request/response-style communication over
 the technically uni-directional message protocol [MQTT](http://mqtt.org).
+
+Conceptually, this RPC API provides two types of communication patterns:
+
+- **Event Emission**:
+  Event Emission is a *uni-directional* communication pattern.
+  An Event is the combination of an event name and optionally zero or more arguments.
+  You *subscribe* to events.
+  When an event is *emitted*, either a single particular subscriber (in case of
+  a directed event emition) or all subscribers are called and receive the
+  arguments as extra information.
+
+- **Service Call**:
+  Service Call is a *bi-directional* communication pattern.
+  A Service is the combination of a service name and optionally zero or more arguments.
+  You *register* for a service.
+   When a service is *called*, a single particular registrator (in case
+  of a directed service call) or one arbitrary registrator is called and
+  receives the arguments as the request. The registrator then has to
+  provide the service response.
 
 Usage
 -----
@@ -77,59 +95,76 @@ The RPC API provides the following methods:
   - `clientId` (string): Custom client identifier (default: auto-generated UUID v1).
   - `codec` (`"cbor"` | `"json"`): Encoding format (default: `"cbor"`).
   - `timeout` (number): Timeout in milliseconds (default: `10000`).
-  - `topicEventMake` (function): Custom topic generation for events.<br/>
+  - `topicEventNoticeMake` (function): Custom topic generation for event notices.<br/>
     Type: `(name: string, clientId?: string) => string`<br/>
-    Default: `` (name, clientId) => clientId ? `${name}/event/${clientId}` : `${name}/event` ``
-  - `topicServiceMake` (function): Custom topic generation for services.<br/>
+    Default: `` (name, clientId) => clientId ? `${name}/event-notice/${clientId}` : `${name}/event-notice` ``
+  - `topicServiceRequestMake` (function): Custom topic generation for service requests.<br/>
     Type: `(name: string, clientId?: string) => string`<br/>
-    Default: `` (name, clientId) => clientId ? `${name}/response/${clientId}` : `${name}/request` ``
-  - `topicEventMatch` (function): Custom topic matching for events.<br/>
+    Default: `` (name, clientId) => clientId ? `${name}/service-request/${clientId}` : `${name}/service-request` ``
+  - `topicServiceResponseMake` (function): Custom topic generation for service responses.<br/>
+    Type: `(name: string, clientId?: string) => string`<br/>
+    Default: `` (name, clientId) => clientId ? `${name}/service-response/${clientId}` : `${name}/service-response` ``
+  - `topicEventNoticeMatch` (function): Custom topic matching for event notices.<br/>
     Type: `(topic: string) => TopicMatch | null`<br/>
     The `TopicMatch` type is `{ name: string, clientId?: string }`.<br/>
-    Default: `` (topic) => { const m = topic.match(/^(.+?)\/event(?:\/(.+))?$/); return m ? { name: m[1], clientId: m[2] } : null } ``<br/>
+    Default: `` (topic) => { const m = topic.match(/^(.+?)\/event-notice(?:\/(.+))?$/); return m ? { name: m[1], clientId: m[2] } : null } ``<br/>
     The match result should have the event `name` and optionally the `clientId`.
-  - `topicServiceMatch` (function): Custom topic matching for services.<br/>
+  - `topicServiceRequestMatch` (function): Custom topic matching for service requests.<br/>
     Type: `(topic: string) => TopicMatch | null`<br/>
     The `TopicMatch` type is `{ name: string, clientId?: string }`.<br/>
-    Default: `` (topic) => { const m = topic.match(/^(.+?)\/(?:request|response\/(.+))$/); return m ? { name: m[1], clientId: m[2] } : null } ``<br/>
+    Default: `` (topic) => { const m = topic.match(/^(.+?)\/service-request(?:\/(.+))?$/); return m ? { name: m[1], clientId: m[2] } : null } ``<br/>
     The match result should have the service `name` and optionally the `clientId`.
+  - `topicServiceResponseMatch` (function): Custom topic matching for service responses.<br/>
+    Type: `(topic: string) => TopicMatch | null`<br/>
+    The `TopicMatch` type is `{ name: string, clientId?: string }`.<br/>
+    Default: `` (topic) => { const m = topic.match(/^(.+?)\/service-response\/(.+)$/); return m ? { name: m[1], clientId: m[2] } : null } ``<br/>
+    The match result should have the service `name` and the `clientId`.
 
 - **Event Subscription**:<br/>
-  `subscribe<C extends (...params: any[]) => void>(event: string, callback: C, options?: IClientSubscribeOptions): Promise<Subscription>`:<br/>
+  `subscribe<K extends EventKeys<T> & string>(event: K, callback: T[K], options?: IClientSubscribeOptions): Promise<Subscription>`:<br/>
   Subscribe to an event. The `event` has to be a valid MQTT topic
   name. The `callback` is called with the `params` passed to
-  a remote `notify()` or `control()`. There is no return value of `callback`.
-  Internally, on the MQTT broker, the topic generated by `topicEventMake()` (default: `${event}/event`) is
-  subscribed. Returns a `Subscription` object with an `unsubscribe()` method.
+  a remote `emit()`. There is no return value of `callback`.
+  Internally, on the MQTT broker, the topics generated by `topicEventNoticeMake()` (default: `${event}/event-notice` and
+  `${event}/event-notice/${clientId}`) are subscribed. Returns a `Subscription` object with an `unsubscribe()` method.
 
 - **Service Registration**:<br/>
-  `register<C extends (...params: any[]) => any>(service: string, callback: C, options?: IClientSubscribeOptions): Promise<Registration>`:<br/>
+  `register<K extends ServiceKeys<T> & string>(service: K, callback: T[K], options?: IClientSubscribeOptions): Promise<Registration>`:<br/>
   Register a service. The `service` has to be a valid MQTT topic
   name. The `callback` is called with the `params` passed to
   a remote `call()`. The return value of `callback`
   will resolve the `Promise` returned by the remote `call()`.
-  Internally, on the MQTT broker, the topic by `topicServiceMake(service, undefined)` (default: `${service}/request`) is
-  subscribed. Returns a `Registration` object with an `unregister()` method.
+  Internally, on the MQTT broker, the topics by `topicServiceRequestMake()` (default: `${service}/service-request` and
+  `${service}/service-request/${clientId}`) are subscribed. Returns a `Registration` object with an `unregister()` method.
 
-- **Event-Based Notification**:<br/>
-  `notify<P extends any[]>(event: string, ...params: P): void`:<br/>
-  Notify all subscribers of an event ("fire and forget").
-  Internally, publishes to the MQTT topic by `topicEventMake(event, undefined)`
-  (default: `${event}/event`).
+- **Client ID Wrapper**:<br/>
+  `clientId(id: string): ClientId`:<br/>
+  Wrap a client ID string for use with `emit()` or `call()` to direct the
+  message to a specific client. Returns a `ClientId` object.
 
-- **Event-Based Control**:<br/>
-  `control<P extends any[]>(clientId: string, event: string, ...params: P): void`:<br/>
-  Send an event to a specific client ("fire and forget").
-  Internally, publishes to the MQTT topic by `topicEventMake(event, clientId)`
-  (default: `${event}/event/${clientId}`).
+- **Event Emission**:<br/>
+  `emit<K extends EventKeys<T> & string>(event: K, ...params: Parameters<T[K]>): void`<br/>
+  `emit<K extends EventKeys<T> & string>(event: K, clientId: ClientId, ...params: Parameters<T[K]>): void`<br/>
+  `emit<K extends EventKeys<T> & string>(event: K, options: IClientPublishOptions, ...params: Parameters<T[K]>): void`<br/>
+  `emit<K extends EventKeys<T> & string>(event: K, clientId: ClientId, options: IClientPublishOptions, ...params: Parameters<T[K]>): void`<br/>
+  Emit an event to all subscribers or a specific client ("fire and forget").
+  The optional `clientId` (wrapped via `clientId()`) directs the event to a specific client.
+  The optional `options` allows setting MQTT publish options like `qos` or `retain`.
+  Internally, publishes to the MQTT topic by `topicEventNoticeMake(event, clientId)`
+  (default: `${event}/event-notice` or `${event}/event-notice/${clientId}`).
 
 - **Service Call**:<br/>
-  `call<C extends (...params: any[]) => any>(service: string, ...params: Parameters<C>): Promise<ReturnType<C>>`:<br/>
+  `call<K extends ServiceKeys<T> & string>(service: K, ...params: Parameters<T[K]>): Promise<Awaited<ReturnType<T[K]>>>`<br/>
+  `call<K extends ServiceKeys<T> & string>(service: K, clientId: ClientId, ...params: Parameters<T[K]>): Promise<Awaited<ReturnType<T[K]>>>`<br/>
+  `call<K extends ServiceKeys<T> & string>(service: K, options: IClientPublishOptions, ...params: Parameters<T[K]>): Promise<Awaited<ReturnType<T[K]>>>`<br/>
+  `call<K extends ServiceKeys<T> & string>(service: K, clientId: ClientId, options: IClientPublishOptions, ...params: Parameters<T[K]>): Promise<Awaited<ReturnType<T[K]>>>`<br/>
   Call a service. The remote `register()` `callback` is
   called with `params` and its return value resolves the returned
   `Promise`. If the remote `callback` throws an exception, this rejects
-  the returned `Promise`. Internally, on the MQTT broker, the topic
-  by `topicServiceMake(service, clientId)` (default: `${service}/response/${clientId}`)
+  the returned `Promise`. The optional `clientId` (wrapped via `clientId()`) directs the call to a specific client.
+  The optional `options` allows setting MQTT publish options like `qos`.
+  Internally, on the MQTT broker, the topic
+  by `topicServiceResponseMake(service, clientId)` (default: `${service}/service-response/${clientId}`)
   is temporarily subscribed for receiving the response.
 
 Internals
@@ -155,7 +190,7 @@ rpc.call("example/hello", "world", 42).then((result) => {
 ```
 
 ...the following JSON-RPC 2.0 request message is sent to the permanent MQTT
-topic `example/hello/request` (UUID `d1db7aa0-0e4e-11e8-b1d9-5f0ab230c0d9` is
+topic `example/hello/service-request` (UUID `d1db7aa0-0e4e-11e8-b1d9-5f0ab230c0d9` is
 a random generated one):
 
 ```json
@@ -178,7 +213,7 @@ rpc.register("example/hello", (a1, a2) => {
 ...and then its result, in the above `rpc.call()` example `"world:42"`, is then
 sent back as the following JSON-RPC 2.0 success response
 message to the temporary (client-specific) MQTT topic
-`example/hello/response/d1acc980-0e4e-11e8-98f0-ab5030b47df4`:
+`example/hello/service-response/d1acc980-0e4e-11e8-98f0-ab5030b47df4`:
 
 ```json
 {
@@ -283,9 +318,9 @@ The output will be:
 ```
 $ node sample.ts
 CONNECT
-RECEIVED example/hello/request {"jsonrpc":"2.0","id":"b441fe30-e8af-11f0-b361-a30e779baa27:b474f510-e8af-11f0-ace2-97e30fcf7dca","method":"example/hello","params":["world",42]}
+RECEIVED example/hello/service-request {"jsonrpc":"2.0","id":"b441fe30-e8af-11f0-b361-a30e779baa27:b474f510-e8af-11f0-ace2-97e30fcf7dca","method":"example/hello","params":["world",42]}
 example/hello: request:  world 42
-RECEIVED example/hello/response/b441fe30-e8af-11f0-b361-a30e779baa27 {"jsonrpc":"2.0","id":"b441fe30-e8af-11f0-b361-a30e779baa27:b474f510-e8af-11f0-ace2-97e30fcf7dca","result":"world:42"}
+RECEIVED example/hello/service-response/b441fe30-e8af-11f0-b361-a30e779baa27 {"jsonrpc":"2.0","id":"b441fe30-e8af-11f0-b361-a30e779baa27:b474f510-e8af-11f0-ace2-97e30fcf7dca","result":"world:42"}
 example/hello sucess:  world:42
 CLOSE
 ```

@@ -87,7 +87,8 @@ export default [
             "@typescript-eslint/no-dynamic-delete":               "off",
             "@typescript-eslint/no-inferrable-types":             "off",
             "@typescript-eslint/consistent-generic-constructors": "off",
-            "@typescript-eslint/no-this-alias":                   "off"
+            "@typescript-eslint/no-this-alias":                   "off",
+            "@typescript-eslint/unified-signatures":              "off"
         },
     }
 ]

@@ -26,7 +26,7 @@ mqtt.on("connect", () => {
     rpc.subscribe("example/sample", (a1, a2) => {
         console.log("example/sample: info: ", a1, a2)
     })
-    rpc.notify("example/sample", "world", 42)
+    rpc.emit("example/sample", "world", 42)
     rpc.register("example/hello", (a1, a2) => {
         console.log("example/hello: request: ", a1, a2)
         return `${a1}:${a2}`
