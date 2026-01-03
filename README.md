@@ -76,10 +76,20 @@ The RPC API provides the following methods:
   - `clientId` (string): Custom client identifier (default: auto-generated UUID v1).
   - `codec` (`"cbor"` | `"json"`): Encoding format (default: `"cbor"`).
   - `timeout` (number): Timeout in milliseconds (default: `10000`).
-  - `topicEventMake` (function): Custom topic generation for events.
-  - `topicServiceMake` (function): Custom topic generation for services.
-  - `topicEventMatch` (function): Custom topic matching for events.
-  - `topicServiceMatch` (function): Custom topic matching for services.
+  - `topicEventMake` (function): Custom topic generation for events.<br/>
+    Type: `(name: string, clientId?: string) => string`<br/>
+    Default: `` (name, clientId) => clientId ? `${name}/event/${clientId}` : `${name}/event` ``
+  - `topicServiceMake` (function): Custom topic generation for services.<br/>
+    Type: `(name: string, clientId?: string) => string`<br/>
+    Default: `` (name, clientId) => clientId ? `${name}/response/${clientId}` : `${name}/request` ``
+  - `topicEventMatch` (function): Custom topic matching for events.<br/>
+    Type: `(topic: string) => RegExpMatchArray | null`<br/>
+    Default: `` (topic) => topic.match(/^(.+?)\/event(?:\/(.+))?$/) ``<br/>
+    The match result should have the event name in group 1 and the optional client ID in group 2.
+  - `topicServiceMatch` (function): Custom topic matching for services.<br/>
+    Type: `(topic: string) => RegExpMatchArray | null`<br/>
+    Default: `` (topic) => topic.match(/^(.+?)\/(?:request|response\/(.+))$/) ``<br/>
+    The match result should have the service name in group 1 and the optional client ID in group 2.
 
 - `RPC#register<C>(service: string, callback: C, options?: IClientSubscribeOptions): Promise<Registration>`:<br/>
   Register a service. The `service` has to be a valid MQTT topic
