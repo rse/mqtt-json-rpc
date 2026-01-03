@@ -32,7 +32,7 @@ mqtt.on("connect", () => {
         return `${a1}:${a2}`
     })
     rpc.call("example/hello", "world", 42).then((result) => {
-        console.log("example/hello sucess: ", result)
+        console.log("example/hello success: ", result)
         mqtt.end()
     }).catch((err) => {
         console.log("example/hello error: ", err)

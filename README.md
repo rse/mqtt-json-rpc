@@ -9,9 +9,6 @@ MQTT-JSON-RPC
 <p/>
 <img src="https://nodei.co/npm/mqtt-json-rpc.png?downloads=true&stars=true" alt=""/>
 
-<p/>
-<img src="https://david-dm.org/rse/mqtt-json-rpc.png" alt=""/>
-
 [![github (author stars)](https://img.shields.io/github/stars/rse?logo=github&label=author%20stars&color=%233377aa)](https://github.com/rse)
 [![github (author followers)](https://img.shields.io/github/followers/rse?label=author%20followers&logo=github&color=%234477aa)](https://github.com/rse)
 
@@ -39,7 +36,7 @@ Conceptually, this RPC API provides two types of communication patterns:
   An Event is the combination of an event name and optionally zero or more arguments.
   You *subscribe* to events.
   When an event is *emitted*, either a single particular subscriber (in case of
-  a directed event emition) or all subscribers are called and receive the
+  a directed event emission) or all subscribers are called and receive the
   arguments as extra information.
 
 - **Service Call**:
@@ -175,7 +172,7 @@ The RPC API provides the following methods:
 Internals
 ---------
 
-In the followinng, assume that an RPC instance is created with:
+In the following, assume that an RPC instance is created with:
 
 ```ts
 import MQTT from "mqtt"
@@ -310,7 +307,7 @@ mqtt.on("connect", () => {
         return `${a1}:${a2}`
     })
     rpc.call("example/hello", "world", 42).then((result) => {
-        console.log("example/hello sucess: ", result)
+        console.log("example/hello success: ", result)
         mqtt.end()
     }).catch((err) => {
         console.log("example/hello error: ", err)
@@ -326,7 +323,7 @@ CONNECT
 RECEIVED example/hello/service-request {"jsonrpc":"2.0","id":"b441fe30-e8af-11f0-b361-a30e779baa27:b474f510-e8af-11f0-ace2-97e30fcf7dca","method":"example/hello","params":["world",42]}
 example/hello: request:  world 42
 RECEIVED example/hello/service-response/b441fe30-e8af-11f0-b361-a30e779baa27 {"jsonrpc":"2.0","id":"b441fe30-e8af-11f0-b361-a30e779baa27:b474f510-e8af-11f0-ace2-97e30fcf7dca","result":"world:42"}
-example/hello sucess:  world:42
+example/hello success:  world:42
 CLOSE
 ```
 
