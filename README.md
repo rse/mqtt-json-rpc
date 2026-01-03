@@ -1,4 +1,6 @@
 
+<img src="https://raw.githubusercontent.com/rse/mqtt-json-rpc/master/etc/logo.svg" width="200" align="right" alt=""/>
+
 MQTT-JSON-RPC
 =============
 
@@ -9,6 +11,9 @@ MQTT-JSON-RPC
 
 <p/>
 <img src="https://david-dm.org/rse/mqtt-json-rpc.png" alt=""/>
+
+[![github (author stars)](https://img.shields.io/github/stars/rse?logo=github&label=author%20stars&color=%233377aa)](https://github.com/rse)
+[![github (author followers)](https://img.shields.io/github/followers/rse?label=author%20followers&logo=github&color=%234477aa)](https://github.com/rse)
 
 Installation
 ------------
