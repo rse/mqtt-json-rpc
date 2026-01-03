@@ -8,12 +8,12 @@ const mqtt = MQTT.connect("wss://10.1.0.10:8889", {
     password: "example"
 })
 
-type RPCSchema = {
+type API = {
     "example/sample": (a1: string, a2: number) => void
     "example/hello":  (a1: string, a2: number) => string
 }
 
-const rpc = new RPC<RPCSchema>(mqtt, { codec: "json" })
+const rpc = new RPC<API>(mqtt, { codec: "json" })
 
 mqtt.on("error",     (err)            => { console.log("ERROR", err) })
 mqtt.on("offline",   ()               => { console.log("OFFLINE") })
