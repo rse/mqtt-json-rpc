@@ -93,6 +93,13 @@ The RPC API provides the following methods:
     Default: `` (topic) => { const m = topic.match(/^(.+?)\/(?:request|response\/(.+))$/); return m ? { name: m[1], clientId: m[2] } : null } ``<br/>
     The match result should have the service `name` and optionally the `clientId`.
 
+- `RPC#subscribe<C>(event: string, callback: C, options?: IClientSubscribeOptions): Promise<Subscription>`:<br/>
+  Subscribe to an event. The `event` has to be a valid MQTT topic
+  name. The `callback` is called with the `params` passed to
+  a remote `RPC#notify()` or `RPC#control()`. The return value of `callback` is ignored.
+  Internally, on the MQTT broker the topic `${event}/event` is
+  subscribed. Returns a `Subscription` object with an `unsubscribe()` method.
+
 - `RPC#register<C>(service: string, callback: C, options?: IClientSubscribeOptions): Promise<Registration>`:<br/>
   Register a service. The `service` has to be a valid MQTT topic
   name. The `callback` is called with the `params` passed to
@@ -100,13 +107,6 @@ The RPC API provides the following methods:
   will resolve the promise returned by the remote `RPC#call()`.
   Internally, on the MQTT broker the topic `${service}/request` is
   subscribed. Returns a `Registration` object with an `unregister()` method.
-
-- `RPC#subscribe<C>(event: string, callback: C, options?: IClientSubscribeOptions): Promise<Subscription>`:<br/>
-  Subscribe to an event. The `event` has to be a valid MQTT topic
-  name. The `callback` is called with the `params` passed to
-  a remote `RPC#notify()` or `RPC#control()`. The return value of `callback` is ignored.
-  Internally, on the MQTT broker the topic `${event}/event` is
-  subscribed. Returns a `Subscription` object with an `unsubscribe()` method.
 
 - `RPC#notify<P>(event: string, ...params: P): void`:<br/>
   Notify all subscribers of an event ("fire and forget").

@@ -136,43 +136,6 @@ export default class API {
         })
     }
 
-    /*  register an RPC service  */
-    register<C extends ((...params: any[]) => any)> (
-        service:  string,
-        callback: C,
-        options?: Partial<IClientSubscribeOptions>
-    ): Promise<Registration> {
-        if (this.registry.has(service))
-            throw new Error(`register: service "${service}" already registered`)
-        this.registry.set(service, callback)
-        return new Promise((resolve, reject) => {
-            const topic = this.options.topicServiceMake(service)
-            this.mqtt.subscribe(topic, { qos: 2, ...options }, (err: Error | null, granted: any) => {
-                if (err)
-                    reject(err)
-                else {
-                    const self = this
-                    const registration: Registration = {
-                        async unregister (): Promise<void> {
-                            if (!self.registry.has(service))
-                                throw new Error(`unregister: method "${service}" not registered`)
-                            self.registry.delete(service)
-                            return new Promise((resolve, reject) => {
-                                self.mqtt.unsubscribe(topic, (err?: Error, packet?: any) => {
-                                    if (err)
-                                        reject(err)
-                                    else
-                                        resolve()
-                                })
-                            })
-                        }
-                    }
-                    resolve(registration)
-                }
-            })
-        })
-    }
-
     /*  subscribe to an RPC event  */
     subscribe<C extends ((...params: any[]) => void)> (
         event:    string,
@@ -205,6 +168,43 @@ export default class API {
                         }
                     }
                     resolve(subscription)
+                }
+            })
+        })
+    }
+
+    /*  register an RPC service  */
+    register<C extends ((...params: any[]) => any)> (
+        service:  string,
+        callback: C,
+        options?: Partial<IClientSubscribeOptions>
+    ): Promise<Registration> {
+        if (this.registry.has(service))
+            throw new Error(`register: service "${service}" already registered`)
+        this.registry.set(service, callback)
+        return new Promise((resolve, reject) => {
+            const topic = this.options.topicServiceMake(service)
+            this.mqtt.subscribe(topic, { qos: 2, ...options }, (err: Error | null, granted: any) => {
+                if (err)
+                    reject(err)
+                else {
+                    const self = this
+                    const registration: Registration = {
+                        async unregister (): Promise<void> {
+                            if (!self.registry.has(service))
+                                throw new Error(`unregister: method "${service}" not registered`)
+                            self.registry.delete(service)
+                            return new Promise((resolve, reject) => {
+                                self.mqtt.unsubscribe(topic, (err?: Error, packet?: any) => {
+                                    if (err)
+                                        reject(err)
+                                    else
+                                        resolve()
+                                })
+                            })
+                        }
+                    }
+                    resolve(registration)
                 }
             })
         })
