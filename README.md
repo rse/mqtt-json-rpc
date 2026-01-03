@@ -59,8 +59,8 @@ Usage
 
 ```ts
 export default type API = {
-    "example/sample": (a1: string, a2: number) => void
-    "example/hello":  (a1: string, a2: number) => string
+    "example/sample": (a1: string, a2: boolean) => void
+    "example/hello":  (a1: string, a2: number)  => string
 }
 ```
 
@@ -75,8 +75,11 @@ const mqtt = MQTT.connect("wss://127.0.0.1:8889", { ... })
 const rpc  = new RPC<API>(mqtt)
 
 mqtt.on("connect", async () => {
+    rpc.subscribe("example/sample", (a1, a2) => {
+        console.log("example/sample: ", a1, a2)
+    })
     rpc.register("example/hello", (a1, a2) => {
-        console.log("example/hello: request: ", a1, a2)
+        console.log("example/hello: ", a1, a2)
         return `${a1}:${a2}`
     })
 })
@@ -93,6 +96,7 @@ const mqtt = MQTT.connect("wss://127.0.0.1:8889", { ... })
 const rpc  = new RPC<API>(mqtt)
 
 mqtt.on("connect", () => {
+    rpc.emit("example/sample", "foo", true)
     rpc.call("example/hello", "world", 42).then((response) => {
         console.log("example/hello response: ", response)
         mqtt.end()
