@@ -58,7 +58,7 @@ Usage
 ### API:
 
 ```ts
-export default type API = {
+export type API = {
     "example/sample": (a1: string, a2: boolean) => void
     "example/hello":  (a1: string, a2: number)  => string
 }
@@ -67,9 +67,9 @@ export default type API = {
 ### Server:
 
 ```ts
-import MQTT from "mqtt"
-import RPC  from "mqtt-json-rpc"
-import API  from "..."
+import MQTT         from "mqtt"
+import RPC          from "mqtt-json-rpc"
+import type { API } from [...]
 
 const mqtt = MQTT.connect("wss://127.0.0.1:8883", { ... })
 const rpc  = new RPC<API>(mqtt)
@@ -88,9 +88,9 @@ mqtt.on("connect", async () => {
 ### Client:
 
 ```ts
-import MQTT from "mqtt"
-import RPC  from "mqtt-json-rpc"
-import API  from "..."
+import MQTT         from "mqtt"
+import RPC          from "mqtt-json-rpc"
+import type { API } from [...]
 
 const mqtt = MQTT.connect("wss://127.0.0.1:8883", { ... })
 const rpc  = new RPC<API>(mqtt)

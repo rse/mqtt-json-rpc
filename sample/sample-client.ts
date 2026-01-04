@@ -20,8 +20,10 @@ mqtt.on("message",   (topic, message) => { console.log("RECEIVED", topic, messag
 mqtt.on("connect", () => {
     console.log("CONNECT")
     rpc.emit("example/sample", "world", 42)
-    rpc.call("example/hello", "world", 42).then(async (result) => {
+    rpc.call("example/hello", "world", 42).then((result) => {
         console.log("example/hello success: ", result)
+    }).catch((err) => {
+        console.log("example/hello error: ", err)
     })
 })
 
