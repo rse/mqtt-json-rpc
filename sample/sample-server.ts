@@ -1,24 +1,20 @@
 
-import Mosquitto from "mosquitto"
-import MQTT      from "mqtt"
-import RPC       from "mqtt-json-rpc"
+import Mosquitto    from "mosquitto"
+import MQTT         from "mqtt"
+import RPC          from "mqtt-json-rpc"
+import type { API } from "./sample-common"
 
 const mosquitto = new Mosquitto({
-    listen: [ { protocol: "wss", address: "127.0.0.1", port: 8443 } ]
+    listen: [ { protocol: "ws", address: "127.0.0.1", port: 8443 } ]
 })
 await mosquitto.start()
 await new Promise((resolve) => { setTimeout(resolve, 500) })
 
-const mqtt = MQTT.connect("wss://127.0.0.1:8443", {
+const mqtt = MQTT.connect("ws://127.0.0.1:8443", {
     rejectUnauthorized: false,
     username: "example",
     password: "example"
 })
-
-type API = {
-    "example/sample": (a1: string, a2: number) => void
-    "example/hello":  (a1: string, a2: number) => string
-}
 
 const rpc = new RPC<API>(mqtt, { codec: "json" })
 
@@ -33,17 +29,9 @@ mqtt.on("connect", () => {
     rpc.subscribe("example/sample", (a1, a2) => {
         console.log("example/sample: info: ", a1, a2)
     })
-    rpc.emit("example/sample", "world", 42)
     rpc.register("example/hello", (a1, a2) => {
         console.log("example/hello: request: ", a1, a2)
         return `${a1}:${a2}`
-    })
-    rpc.call("example/hello", "world", 42).then(async (result) => {
-        console.log("example/hello success: ", result)
-        mqtt.end()
-        await mosquitto.stop()
-    }).catch((err) => {
-        console.log("example/hello error: ", err)
     })
 })
 

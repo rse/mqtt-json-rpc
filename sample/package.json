@@ -20,7 +20,8 @@
     "scripts": {
         "build":                           "vite --config vite.mjs build --mode production",
         "start":                           "tsx sample.ts",
-        "start:browser":                   "open sample.html",
+        "server":                          "tsx sample-server.ts",
+        "client":                          "open sample.html",
         "clean":                           "rimraf node_modules sample.bundle.js"
     }
 }

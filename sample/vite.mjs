@@ -2,6 +2,7 @@
 import * as Vite             from "vite"
 import { tscPlugin }         from "@wroud/vite-plugin-tsc"
 import { viteSingleFile }    from "vite-plugin-singlefile"
+import { nodePolyfills }     from "vite-plugin-node-polyfills"
 
 export default Vite.defineConfig(({ command, mode }) => ({
     logLevel: "info",
@@ -14,14 +15,18 @@ export default Vite.defineConfig(({ command, mode }) => ({
             packageManager: "npx",
             prebuild:       true
         }),
+        nodePolyfills(),
         viteSingleFile()
     ],
     build: {
+        rollupOptions: {
+            external: []
+        },
         lib: {
-            entry:    "sample.js",
+            entry:    "sample-client.js",
             formats:  [ "umd" ],
             name:     "Sample",
-            fileName: (format) => "sample.bundle.js"
+            fileName: (format) => "sample-client.bundle.js"
         },
         target:                 "es2024",
         outDir:                 ".",

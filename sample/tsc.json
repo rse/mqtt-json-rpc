@@ -18,7 +18,7 @@
         "rootDir":                 "."
     },
     "include": [
-        "./*.ts"
+        "./sample-client.ts"
     ],
     "exclude": [
         "./node_modules"
