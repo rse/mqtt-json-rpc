@@ -9,14 +9,17 @@
         "mqtt-json-rpc":                   ".."
     },
     "devDependencies": {
+        "typescript":                      "5.9.3",
+        "tsx":                             "4.21.0",
         "vite":                            "7.3.0",
         "vite-plugin-singlefile":          "2.3.0",
         "vite-plugin-node-polyfills":      "0.24.0",
-        "@wroud/vite-plugin-tsc":          "0.12.2"
+        "@wroud/vite-plugin-tsc":          "0.12.2",
+        "mosquitto":                       "0.9.4"
     },
     "scripts": {
         "build":                           "vite --config vite.mjs build --mode production",
-        "start":                           "node sample.ts",
+        "start":                           "tsx sample.ts",
         "start:browser":                   "open sample.html",
         "clean":                           "rimraf node_modules sample.bundle.js"
     }

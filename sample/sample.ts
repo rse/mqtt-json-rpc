@@ -1,9 +1,13 @@
 
-import MQTT from "mqtt"
-import RPC  from "mqtt-json-rpc"
+import Mosquitto from "mosquitto"
+import MQTT      from "mqtt"
+import RPC       from "mqtt-json-rpc"
 
-const mqtt = MQTT.connect("wss://10.1.0.10:8889", {
-    rejectUnauthorized: false,
+const mosquitto = new Mosquitto()
+await mosquitto.start()
+await new Promise((resolve) => { setTimeout(resolve, 500) })
+
+const mqtt = MQTT.connect("mqtt://127.0.0.1:1883", {
     username: "example",
     password: "example"
 })
@@ -31,9 +35,10 @@ mqtt.on("connect", () => {
         console.log("example/hello: request: ", a1, a2)
         return `${a1}:${a2}`
     })
-    rpc.call("example/hello", "world", 42).then((result) => {
+    rpc.call("example/hello", "world", 42).then(async (result) => {
         console.log("example/hello success: ", result)
         mqtt.end()
+        await mosquitto.stop()
     }).catch((err) => {
         console.log("example/hello error: ", err)
     })

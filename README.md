@@ -67,11 +67,11 @@ export default type API = {
 ### Server:
 
 ```ts
-import MQTT  from "mqtt"
-import RPC   from "mqtt-json-rpc"
-import API   from "..."
+import MQTT from "mqtt"
+import RPC  from "mqtt-json-rpc"
+import API  from "..."
 
-const mqtt = MQTT.connect("wss://127.0.0.1:8889", { ... })
+const mqtt = MQTT.connect("wss://127.0.0.1:8883", { ... })
 const rpc  = new RPC<API>(mqtt)
 
 mqtt.on("connect", async () => {
@@ -90,9 +90,9 @@ mqtt.on("connect", async () => {
 ```ts
 import MQTT from "mqtt"
 import RPC  from "mqtt-json-rpc"
-import API   from "..."
+import API  from "..."
 
-const mqtt = MQTT.connect("wss://127.0.0.1:8889", { ... })
+const mqtt = MQTT.connect("wss://127.0.0.1:8883", { ... })
 const rpc  = new RPC<API>(mqtt)
 
 mqtt.on("connect", () => {
@@ -313,14 +313,10 @@ acl_file             mosquitto-acl.txt
 
 [...]
 
-#   additional listener (wss: MQTT over WebSockets+SSL/TLS)
-listener             8889 127.0.0.1
+#   additional listener
+listener             1883 127.0.0.1
 max_connections      -1
-protocol             websockets
-cafile               mosquitto-ca.crt.pem
-certfile             mosquitto-sv.crt.pem
-keyfile              mosquitto-sv.key.pem
-require_certificate  false
+protocol             mqtt
 
 [...]
 ```
@@ -343,11 +339,15 @@ MQTT-JSON-RPC in action and tracing its communication (the typing of the `RPC`
 class with `API` is optional, but strongly suggested):
 
 ```ts
-import MQTT from "mqtt"
-import RPC  from "mqtt-json-rpc"
+import Mosquitto from "mosquitto"
+import MQTT      from "mqtt"
+import RPC       from "mqtt-json-rpc"
 
-const mqtt = MQTT.connect("wss://127.0.0.1:8889", {
-    rejectUnauthorized: false,
+const mosquitto = new Mosquitto()
+await mosquitto.start()
+await new Promise((resolve) => { setTimeout(resolve, 500) })
+
+const mqtt = MQTT.connect("mqtt://127.0.0.1:1883", {
     username: "example",
     password: "example"
 })
@@ -376,6 +376,7 @@ mqtt.on("connect", () => {
     rpc.call("example/hello", "world", 42).then((result) => {
         console.log("example/hello success: ", result)
         mqtt.end()
+        await mosquitto.stop()
     }).catch((err) => {
         console.log("example/hello error: ", err)
     })
