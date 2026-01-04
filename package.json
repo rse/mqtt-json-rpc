@@ -1,6 +1,6 @@
 {
     "name":                           "mqtt-json-rpc",
-    "version":                        "2.1.1",
+    "version":                        "3.0.0",
     "description":                    "JSON-RPC protocol over MQTT communication",
     "keywords":                       [ "json-rpc", "json", "rpc", "mqtt" ],
     "license":                        "MIT",
