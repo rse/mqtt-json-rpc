@@ -1,6 +1,4 @@
 node_modules
-sample/sample.js
-sample/sample.bundle.js
 sample/tsc.tsbuildinfo
 etc/tsc.tsbuildinfo
 dst
