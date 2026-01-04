@@ -174,7 +174,7 @@ export default class API<T extends APISchema = APISchema> {
     }
 
     /*  subscribe to an MQTT topic (Promise-based)  */
-    async subscribeTopic (topic: string, options: Partial<IClientSubscribeOptions> = {}) {
+    private async _subscribeTopic (topic: string, options: Partial<IClientSubscribeOptions> = {}) {
         return new Promise<void>((resolve, reject) => {
             this.mqtt.subscribe(topic, { qos: 2, ...options }, (err: Error | null, _granted: any) => {
                 if (err) reject(err)
@@ -184,7 +184,7 @@ export default class API<T extends APISchema = APISchema> {
     }
 
     /*  unsubscribe from an MQTT topic (Promise-based)  */
-    async unsubscribeTopic (topic: string) {
+    private async _unsubscribeTopic (topic: string) {
         return new Promise<void>((resolve, reject) => {
             this.mqtt.unsubscribe(topic, (err?: Error, _packet?: any) => {
                 if (err) reject(err)
@@ -225,11 +225,11 @@ export default class API<T extends APISchema = APISchema> {
 
         /*  subscribe to MQTT topics  */
         await Promise.all([
-            this.subscribeTopic(topicB, { qos: 0, ...options }),
-            this.subscribeTopic(topicD, { qos: 0, ...options })
+            this._subscribeTopic(topicB, { qos: 0, ...options }),
+            this._subscribeTopic(topicD, { qos: 0, ...options })
         ]).catch((err: Error) => {
-            this.unsubscribeTopic(topicB).catch(() => {})
-            this.unsubscribeTopic(topicD).catch(() => {})
+            this._unsubscribeTopic(topicB).catch(() => {})
+            this._unsubscribeTopic(topicD).catch(() => {})
             throw err
         })
 
@@ -244,8 +244,8 @@ export default class API<T extends APISchema = APISchema> {
                     throw new Error(`unsubscribe: event "${event}" not subscribed`)
                 self.registry.delete(event)
                 return Promise.all([
-                    self.unsubscribeTopic(topicB),
-                    self.unsubscribeTopic(topicD)
+                    self._unsubscribeTopic(topicB),
+                    self._unsubscribeTopic(topicD)
                 ]).then(() => {})
             }
         }
@@ -284,11 +284,11 @@ export default class API<T extends APISchema = APISchema> {
 
         /*  subscribe to MQTT topics  */
         await Promise.all([
-            this.subscribeTopic(topicB, { qos: 2, ...options }),
-            this.subscribeTopic(topicD, { qos: 2, ...options })
+            this._subscribeTopic(topicB, { qos: 2, ...options }),
+            this._subscribeTopic(topicD, { qos: 2, ...options })
         ]).catch((err: Error) => {
-            this.unsubscribeTopic(topicB).catch(() => {})
-            this.unsubscribeTopic(topicD).catch(() => {})
+            this._unsubscribeTopic(topicB).catch(() => {})
+            this._unsubscribeTopic(topicD).catch(() => {})
             throw err
         })
 
@@ -303,8 +303,8 @@ export default class API<T extends APISchema = APISchema> {
                     throw new Error(`unregister: service "${service}" not registered`)
                 self.registry.delete(service)
                 return Promise.all([
-                    self.unsubscribeTopic(topicB),
-                    self.unsubscribeTopic(topicD)
+                    self._unsubscribeTopic(topicB),
+                    self._unsubscribeTopic(topicD)
                 ]).then(() => {})
             }
         }
