@@ -298,12 +298,12 @@ the UUID v1 of the particular service request. The `clientId` is used for
 sending back the JSON-RPC 2.0 response message to the requestor only.
 The `requestId` is used for correlating the response to the request only.
 
-Example
--------
+Broker Setup
+------------
 
 For a real test-drive of MQTT-JSON-RPC, install the
-[Mosquitto](https://mosquitto.org/) MQTT broker with at least a "MQTT
-over Secure-WebSockets" lister in the `mosquitto.conf` file like...
+[Mosquitto](https://mosquitto.org/) MQTT broker and a `mosquitto.conf`
+file like...
 
 ```
 [...]
@@ -334,7 +334,13 @@ topic   readwrite example/#
 example:$6$awYNe6oCAi+xlvo5$mWIUqyy4I0O3nJ99lP1mkRVqsDGymF8en5NChQQxf7KrVJLUp1SzrrVDe94wWWJa3JGIbOXD9wfFGZdi948e6A==
 ```
 
-Then test-drive MQTT-JSON-RPC with a complete [sample](sample/sample.ts) to see
+Alternatively, you can use the [NPM package mosquitto](https://npmjs.com/mosquitto)
+for an equal setup.
+
+Example
+-------
+
+You can test-drive MQTT-JSON-RPC with a complete [sample](sample/sample.ts) to see
 MQTT-JSON-RPC in action and tracing its communication (the typing of the `RPC`
 class with `API` is optional, but strongly suggested):
 
