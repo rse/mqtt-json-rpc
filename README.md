@@ -14,13 +14,13 @@ MQTT-JSON-RPC
 
 > [!Note]
 > This package is no longer actively developed, as it
-> already evolved into a more sophisticated solution naned
+> already evolved into a more sophisticated solution named
 > [**MQTT+**](https://github.com/rse/mqtt-plus). **MQTT+**
 > encodes packets as CBOR by default, uses an own packet format
 > (allowing sender and receiver information), uses shorter NanoIDs
 > instead of longer UUIDs for identification of sender, receiver and
-> requests, and additionally provides resource transfer support through
-> bi-directional streaming.
+> requests, and additionally provides bi-directional resource transfer
+> via chunk streaming.
 
 Installation
 ------------
