@@ -1,16 +1,6 @@
 
 <img src="https://raw.githubusercontent.com/rse/mqtt-json-rpc/master/etc/logo.svg" width="300" align="right" alt=""/>
 
-> [!Note]
-> This package is no longer actively developed, as it
-> already evolved into a more sophisticated solution naned
-> [**MQTT+**](https://github.com/rse/mqtt-plus). **MQTT+**
-> encodes packets as CBOR by default, uses an own packet format
-> (allowing sender and receiver information), uses shorter NanoIDs
-> instead of longer UUIDs for identification of sender, receiver and
-> requests, and additionally provides resource transfer support through
-> bi-directional streaming.
-
 MQTT-JSON-RPC
 =============
 
@@ -21,6 +11,16 @@ MQTT-JSON-RPC
 
 [![github (author stars)](https://img.shields.io/github/stars/rse?logo=github&label=author%20stars&color=%233377aa)](https://github.com/rse)
 [![github (author followers)](https://img.shields.io/github/followers/rse?label=author%20followers&logo=github&color=%234477aa)](https://github.com/rse)
+
+> [!Note]
+> This package is no longer actively developed, as it
+> already evolved into a more sophisticated solution naned
+> [**MQTT+**](https://github.com/rse/mqtt-plus). **MQTT+**
+> encodes packets as CBOR by default, uses an own packet format
+> (allowing sender and receiver information), uses shorter NanoIDs
+> instead of longer UUIDs for identification of sender, receiver and
+> requests, and additionally provides resource transfer support through
+> bi-directional streaming.
 
 Installation
 ------------
