@@ -26,19 +26,19 @@
     "devDependencies": {
         "@rse/stx":                   "1.1.4",
         "shx":                        "0.4.0",
-        "eslint":                     "9.39.2",
+        "eslint":                     "10.1.0",
         "eslint-plugin-node":         "11.1.0",
-        "globals":                    "17.1.0",
-        "@eslint/js":                 "9.39.2",
-        "@eslint/eslintrc":           "3.3.3",
+        "globals":                    "17.4.0",
+        "@eslint/js":                 "10.0.1",
+        "@eslint/eslintrc":           "3.3.5",
         "jiti":                       "2.6.1",
         "tsx":                        "4.21.0",
         "typescript":                 "5.9.3",
-        "typescript-eslint":          "8.53.1",
-        "@typescript-eslint/parser":  "8.53.1",
-        "mqtt":                       "5.14.1",
+        "typescript-eslint":          "8.57.2",
+        "@typescript-eslint/parser":  "8.57.2",
+        "mqtt":                       "5.15.1",
         "vite":                       "7.3.1",
-        "vite-plugin-singlefile":     "2.3.0",
+        "vite-plugin-singlefile":     "2.3.2",
         "vite-plugin-node-polyfills": "0.25.0",
         "@wroud/vite-plugin-tsc":     "0.12.2"
     },
@@ -48,7 +48,7 @@
     "dependencies": {
         "pure-uuid":                  "2.0.0",
         "jsonrpc-lite":               "2.2.0",
-        "cbor":                       "10.0.11"
+        "cbor":                       "10.0.12"
     },
     "engines": {
         "node":                       ">=16.0.0"
