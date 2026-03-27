@@ -90,11 +90,11 @@ class Codec {
         let result: Buffer | string
         if (this.type === "cbor") {
             try { result = CBOR.encode(data) }
-            catch (_ex) { throw new Error("failed to encode CBOR format") }
+            catch (ex) { throw new Error("failed to encode CBOR format", { cause: ex }) }
         }
         else if (this.type === "json") {
             try { result = JSON.stringify(data) }
-            catch (_ex) { throw new Error("failed to encode JSON format") }
+            catch (ex) { throw new Error("failed to encode JSON format", { cause: ex }) }
         }
         else
             throw new Error("invalid format")
@@ -104,11 +104,11 @@ class Codec {
         let result: unknown
         if (this.type === "cbor" && typeof data === "object" && data instanceof Buffer) {
             try { result = CBOR.decode(data) }
-            catch (_ex) { throw new Error("failed to decode CBOR format") }
+            catch (ex) { throw new Error("failed to decode CBOR format", { cause: ex }) }
         }
         else if (this.type === "json" && typeof data === "string") {
             try { result = JSON.parse(data) }
-            catch (_ex) { throw new Error("failed to decode JSON format") }
+            catch (ex) { throw new Error("failed to decode JSON format", { cause: ex }) }
         }
         else
             throw new Error("invalid format or wrong data type")

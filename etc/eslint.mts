@@ -76,6 +76,7 @@ export default [
             "no-console":                                  "off",
             "lines-between-class-members":                 "off",
             "array-bracket-spacing":                       "off",
+            "no-useless-assignment":                       "off",
 
             "@typescript-eslint/no-empty-function":               "off",
             "@typescript-eslint/no-explicit-any":                 "off",
