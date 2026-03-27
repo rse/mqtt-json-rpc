@@ -33,7 +33,8 @@ export default Vite.defineConfig(({ command, mode }) => ({
             entry:    "dst/mqtt-json-rpc.js",
             formats:  formats.split(","),
             name:     "MqttJsonRpc",
-            fileName: (format) => `mqtt-json-rpc.${format === "es" ? "esm" : format}.js`
+            fileName: (format, entryName) =>
+                `mqtt-json-rpc.${format === "es" ? "esm" : format}.${format === "cjs" ? "cjs" : "js" }`
         },
         target:                 formats === "umd" ? "es2022" : "node20",
         outDir:                 "dst",

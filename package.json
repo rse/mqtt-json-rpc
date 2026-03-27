@@ -15,12 +15,12 @@
     "type":                           "module",
     "types":                          "./dst/mqtt-json-rpc.d.ts",
     "module":                         "./dst/mqtt-json-rpc.esm.js",
-    "main":                           "./dst/mqtt-json-rpc.cjs.js",
+    "main":                           "./dst/mqtt-json-rpc.cjs.cjs",
     "browser":                        "./dst/mqtt-json-rpc.umd.js",
     "exports": {
         ".": {
             "import":                 { "types": "./dst/mqtt-json-rpc.d.ts", "default": "./dst/mqtt-json-rpc.esm.js" },
-            "require":                { "types": "./dst/mqtt-json-rpc.d.ts", "default": "./dst/mqtt-json-rpc.cjs.js" }
+            "require":                { "types": "./dst/mqtt-json-rpc.d.ts", "default": "./dst/mqtt-json-rpc.cjs.cjs" }
         }
     },
     "devDependencies": {
